@@ -68,7 +68,7 @@ if($_POST['need_ban'] == 1){
 }
 
 $order = array(
-    'shipping_id'     => 1,
+    'shipping_id'     => 5,
     'pay_id'          => 5, //5微信支付
     'pack_id'         => isset($_POST['pack']) ? intval($_POST['pack']) : 0,
     'card_id'         => isset($_POST['card']) ? intval($_POST['card']) : 0,
@@ -219,8 +219,8 @@ foreach ($cart_goods AS $val)
         $is_real_good=1;
     }
 }
-if(isset($is_real_good))
-{
+//选择配送方式
+if(isset($is_real_good)){
     $sql="SELECT shipping_id FROM " . $ecs->table('shipping') . " WHERE shipping_id=".$order['shipping_id'] ." AND enabled =1";
     if(!$db->getOne($sql))
     {
@@ -366,8 +366,12 @@ $error_no = 0;
 do
 {
     $order['order_sn'] = get_order_sn(); //获取新订单号
-    $GLOBALS['db']->autoExecute($GLOBALS['ecs']->table('order_info'), $order, 'INSERT');
     
+    //去掉配送费
+//     $diff = $order['order_amount'] - $order['goods_amount'];
+//     $order['order_amount'] = $order['order_amount'] - $diff;
+    
+    $GLOBALS['db']->autoExecute($GLOBALS['ecs']->table('order_info'), $order, 'INSERT');
     $error_no = $GLOBALS['db']->errno();
     
     if ($error_no > 0 && $error_no != 1062)
@@ -417,16 +421,6 @@ if($res){
         $db->query($sql);
     }
 }
-
-// $sql = "INSERT INTO " . $ecs->table('order_goods') . "( " .
-//     "order_id, goods_id, goods_name, goods_sn, product_id, goods_number, market_price, ".
-//     "goods_price, goods_attr, is_real, extension_code, parent_id, is_gift, goods_attr_id, ori_price, supply_price, suppliers_id) ".
-// " SELECT '$new_order_id', goods_id, goods_name, goods_sn, product_id, goods_number, market_price, ".
-//     "goods_price, goods_attr, is_real, extension_code, parent_id, is_gift, goods_attr_id, ori_price, supply_price, suppliers_id".
-// " FROM " .$ecs->table('cart') .
-// " WHERE session_id = '".SESS_ID."' AND rec_type = '$flow_type'";
-// $db->query($sql);
-
 
 /* 修改拍卖活动状态 */
 if ($order['extension_code']=='auction')
@@ -544,10 +538,6 @@ if ($order['order_amount'] > 0){
         $arr['orderId'] = $order['order_id'];
         $arr['orderFee'] = $order['order_amount'];
         $orderJson = base64_encode(json_encode($arr));
-        
-        ajaxReturn($order);
-        
-        exit;
         $pay_online = '<div style="text-align:center"><input type="button" class="orderJson" data-id= "'.$orderJson.'" value="立即支付" /></div>';
     }else{
         
@@ -580,6 +570,11 @@ unset($_SESSION['flow_consignee']); // 清除session中保存的收货人信息
 unset($_SESSION['flow_order']);
 unset($_SESSION['direct_shopping']);
 
+if($order['pay_id'] == 5){ //微信支付
+
+    ajaxReturn(['code' => 1,'order' => $order]);
+    
+}
 
 /**
  * 检查订单中商品库存

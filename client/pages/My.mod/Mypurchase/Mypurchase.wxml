@@ -2,7 +2,7 @@
 <view class="items_view">
   <block wx:for="{{purchases}}" wx:key="*this">
     <view class="item_view">
-      <view class="item_name">{{item.name}}</view>
+      <view class="item_name">标题:{{item.name}}</view>
       <view class="item_detail">  
       <view>品牌:{{item.brand}}</view>
        <view>型号:{{item.cate}}</view>

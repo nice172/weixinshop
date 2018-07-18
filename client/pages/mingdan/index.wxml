@@ -1,0 +1,19 @@
+<!--pages/mingdan/index.wxml-->
+<view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
+ <view class="page__bd">
+
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">品牌</view>
+                </view>
+                <view class="weui-cell__bd">
+                    <picker bindchange='bindchange' value="{{index}}" range-key='brand_name' range="{{brandList}}">
+                        <view class="weui-input">{{brandList[index]['brand_name']}}</view>
+                    </picker>
+                </view>
+            </view>
+        </view>
+      <button type="warn" bindtap='btn' style="width:80%;margin:20px auto;">确认</button>
+</view>
+</view>

@@ -1,0 +1,2 @@
+@import "/lib/weui.wxss";
+page{background:#fbfbfb;height:100%;}

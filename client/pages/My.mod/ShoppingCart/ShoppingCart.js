@@ -9,12 +9,29 @@ Page({
     allPrice: "0.00",
     num: 0,
     isChoseAll: false,
-    carts: [
-    ]
+    carts: []
   },
 
   payment: function(e){
     //18223537801
+    if (this.data.carts.length <= 0){
+      wx.showToast({
+        title: '您的购物车中没商品！',
+        icon: 'none',
+        mask: true,
+        success: function(res) {},
+        fail: function(res) {},
+        complete: function(res) {},
+      });
+      return;
+    }
+    wx.showLoading({
+      title: '正在提交订单中',
+      mask: true,
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
+    });
     var app = getApp()
     var page = this;
     http.send({
@@ -62,7 +79,27 @@ Page({
                     "content-type": "application/x-www-form-urlencoded"
                   },
                   success: function(response){
-                    
+                      if(response.data.code == 1){
+
+                      wx.requestPayment({
+                        timeStamp: '',
+                        nonceStr: '',
+                        package: '',
+                        signType: '',
+                        paySign: '',
+                        success: function(res) {},
+                        fail: function(res) {},
+                        complete: function(res) {},
+                      });
+
+
+                      }else{
+                        wx.showToast({
+                          title: response.data.msg,
+                          icon: 'none',
+                          mask: true
+                        });
+                      }
                   }
                 });
 

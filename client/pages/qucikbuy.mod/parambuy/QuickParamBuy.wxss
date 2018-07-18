@@ -1,4 +1,7 @@
 /* pages/qucikbuy.mod/parambuy/QuickParamBuy.wxss */
+@import "/template/Input_Location.wxss";
+@import "/template/TableCell.wxss";
+@import "/lib/weui.wxss";
 page{
   background: #f6f6f6;
 }
@@ -27,5 +30,5 @@ page{
 .Prarm_view{
   background: #FFF;
   margin-top: 20rpx;
-  padding-bottom: 30rpx;
+  /* padding-bottom: 30rpx; */
 }

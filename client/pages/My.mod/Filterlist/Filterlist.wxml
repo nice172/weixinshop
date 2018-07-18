@@ -12,19 +12,22 @@
 </view>
 <view class="AllReferrals">
   <view class="TipsView">{{choseclass==0?"优先推荐白名单发布的产品!":"黑名单中的产品将不会出现在你的推荐列表!"}}</view>
-  <block wx:for="{{list}}" wx:key="*this">
+  
+  
+  <block wx:for="{{list[choseclass]}}" wx:key="*this">
+    
     <view class="ref_view">
       <view class="ref_center">
-        <view class="ref_name">{{item.name}}</view>
+        <view class="ref_name">{{item.brand_name}}</view>
       </view>
       <view>
-        <view class="ref_del"><image class="act_Del_image" src='/images/del.png'></image></view>
+        <view class="ref_del" bindtap='del' data-index="{{index}}" data-id='{{item.id}}'><image class="act_Del_image" src='/images/del.png' style="width:40rpx;height:40rpx;margin-top:30rpx;margin-left:50rpx;"></image></view>
       </view>
     </view>
 
   </block>
 
 </view>
-<view class='addFilt'>
+<view class='addFilt' bindtap='addBtn'>
   添加{{choseclass==0?"白":"黑"}}名单
 </view>

@@ -10,25 +10,7 @@ Page({
     status:{
       0:"待付款"
     },
-    Orders: [
-      {
-        ordernum: "iasue1294802183124",
-        status: 0,
-        isPay: false,
-        isCanDel: false,
-        isHaveStic: false,
-        money: 300,
-        items: [
-          {
-            name: "铝板x12mm",
-            num: 1,
-            money: 99,
-            img: "/cache/showpic.png"
-          }
-
-        ]
-      }
-    ]
+    Orders: []
   },
 
   /**

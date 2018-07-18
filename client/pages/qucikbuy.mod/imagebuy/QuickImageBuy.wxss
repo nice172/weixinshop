@@ -36,6 +36,6 @@ page{
 .params{
   background: #FFF;
   margin-top: 20rpx;
-  padding-bottom: 30rpx;
+  /* padding-bottom: 30rpx; */
 }
 

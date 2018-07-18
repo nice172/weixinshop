@@ -34,11 +34,13 @@ $not_login_arr = array(
     "cart",
     "add_to_cart",
     "brand_list",
+    'mingdanbrand',
     "get_cat_info",
 	'act_login',
     'test',
     'detail',
-    'search'
+    'search',
+    'quickcate',
 );
 
 /* 显示页面的action列表 */
@@ -49,6 +51,7 @@ $ui_arr = array(
     "drop_consignee",
     "mem_info",
     "purchase_list",
+    'purchase_delete',
     "account_log",
     "act_edit_purchase",
     "stock_list",
@@ -59,6 +62,12 @@ $ui_arr = array(
     'get_address_default',
     'payment',
 	'userinfo',
+    'updateuser',
+    'getpurchase',
+    'paymentapi',
+    'mingdansend',
+    'mingdanlist',
+    'deletemingdan'
 );
 
 /* 未登录处理 */
@@ -88,6 +97,175 @@ if ($act == 'search'){
     include 'list.php';
     
     return;
+}
+
+if ($act == 'purchase_delete'){
+ 
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    if ($id <= 0) ajaxReturn(['code' => 0,'msg' => '删除失败']);
+    
+    $db->query("delete from {$ecs->table('user_purchase')} where user_id='{$user_id}' and purchase_id='{$id}'");
+    if ($db->affected_rows()){
+        ajaxReturn(['code' => 1,'msg' => '删除成功']);
+    }else{
+        ajaxReturn(['code' => 0,'msg' => '删除失败']);
+    }
+}
+
+if ($act == 'deletemingdan'){
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    if ($id <= 0) ajaxReturn(['code' => 0,'msg' => '删除失败']);
+    $db->query("delete from {$ecs->table('user_black')} where user_id='{$user_id}' and id='{$id}'");
+    if ($db->affected_rows()){
+        ajaxReturn(['code' => 1,'msg' => '删除成功']);
+    }else{
+        ajaxReturn(['code' => 0,'msg' => '删除失败']);
+    }
+    return;
+}
+
+if ($act == 'quickcate'){
+    include 'WxCategory.class.php';
+    $sql = "SELECT brand_id,brand_name FROM " . $GLOBALS['ecs']->table('brand');
+    $brand_list = $db->getAll($sql);
+    $WxCategory = new WxCategory();
+    $catelist = $WxCategory->get_child_tree();
+    $ban_categories = $WxCategory->get_lists($catelist);
+    
+    $model = $ban_categories[218]['attrs']; //型号
+    $tonghou = $ban_categories[227]['attrs']; //铜厚
+    $banhou = $ban_categories[226]['attrs']; //板厚
+    $size = $ban_categories[229]['attrs']; //尺寸
+
+    $tempCate = $tempmodel = $temptonghou = $tempbanhou = $tempsize = array();
+    foreach ($catelist as $key => $value){
+        $tempCate[] = $value;
+    }
+    $catelist = $tempCate;
+    
+    foreach ($model as $v){
+        $tempmodel[] = $v;
+    }
+    $model = $tempmodel;
+    
+    foreach ($tonghou as $v){
+        $temptonghou[] = $v;
+    }
+    $tonghou = $temptonghou;
+    
+    foreach ($banhou as $v){
+        $tempbanhou[] = $v;
+    }
+    $banhou = $tempbanhou;
+    
+    foreach ($size as $v){
+        $tempsize[] = $v;
+    }
+    $size = $tempsize;
+    
+    unset($tempCate,$tempmodel,$temptonghou,$tempbanhou,$tempsize);
+    ajaxReturn(['code' => 1,'tonghou' => $tonghou, 
+        'banhou' => $banhou,'catelist' => $catelist,
+        'model' => $model,'size' => $size,'bandlist' => $brand_list]);
+}
+
+if ($act == 'mingdanlist'){
+    
+    $whiteList = $db->getAll("select * from {$ecs->table('user_black')} where type=0 and user_id=$user_id");
+    $blackList = $db->getAll("select * from {$ecs->table('user_black')} where type=1 and user_id=$user_id");
+    ajaxReturn(['code' => 1,
+        'white' => $whiteList,
+        'whiteTotal' => count($whiteList),
+        'blackTotal' => count($blackList),
+        'black' => $blackList]);
+    return;
+}
+if ($act == 'mingdansend'){
+    $data = post();
+    if (empty($data) || !is_array($data)) ajaxReturn(['code' => 0,'msg' => '提交失败']);
+    $data['type'] = intval($data['type']);
+    $data['user_id'] = $user_id;
+    $data['brand_id'] = intval($data['brand_id']);
+    $data['brand_name'] = htmlspecialchars($data['brand_name']);
+    
+    $row = $db->getRow("select * from {$ecs->table('user_black')} where user_id=$user_id and brand_id='{$data['brand_id']}' and type='{$data['type']}'");
+    if (!empty($row)) ajaxReturn(['code' => 0,'msg' => '不能重复提交']);
+    
+    if($db->autoExecute($ecs->table('user_black'), $data)){
+        ajaxReturn(['code' => 1,'msg' => '提交成功']);
+    }else{
+        ajaxReturn(['code' => 0,'msg' => '提交失败']);
+    }
+    return;
+}
+
+if ($act == 'paymentapi'){
+    
+    require_once "./wxpay/lib/WxPay.Api.php";
+    require_once "./wxpay/WxPay.JsApiPay.php";
+    require_once "./wxpay/WxPay.Config.php";
+    require_once './wxpay/log.php';
+    
+    //初始化日志
+    $logHandler= new CLogFileHandler("./wxpay/logs/".date('Y-m-d').'.log');
+    $log = Log::Init($logHandler, 15);
+        
+    //①、获取用户openid
+    try{
+        
+        $tools = new JsApiPay();
+        $openId = $tools->GetOpenid();
+        
+        //②、统一下单
+        $input = new WxPayUnifiedOrder();
+        $input->SetBody("test");
+        $input->SetAttach("test");
+        $input->SetOut_trade_no("sdkphp".date("YmdHis"));
+        $input->SetTotal_fee("1");
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
+        $input->SetGoods_tag("test");
+        $input->SetNotify_url("http://paysdk.weixin.qq.com/notify.php");
+        $input->SetTrade_type("JSAPI");
+        $input->SetOpenid($openId);
+        $config = new WxPayConfig();
+        $order = WxPayApi::unifiedOrder($config, $input);
+       
+        printf_info($order);
+        $jsApiParameters = $tools->GetJsApiParameters($order);
+        
+        //获取共享收货地址js函数参数
+        $editAddress = $tools->GetEditAddressParameters();
+    } catch(Exception $e) {
+        Log::ERROR(json_encode($e));
+    }
+    
+    return;
+}
+
+if ($act == 'getpurchase'){
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    if ($id <= 0) ajaxReturn(['code' => 0,'msg' => '加载数据失败']);
+    $data = $db->getRow("select * from {$ecs->table('user_purchase')} where user_id='{$user_id}' and purchase_id='{$id}'");
+    if (empty($data)) ajaxReturn(['code' => 0,'msg' => '加载数据失败']);
+    ajaxReturn(['code' => 1,'data' => $data]);
+}
+
+if ($act == 'updateuser'){
+    $data = post();
+    if (empty($data) || !is_array($data)) ajaxReturn(['code' => 0, 'msg' => '修改失败']);
+    if (!checkmobile($data['mobile_phone'])) ajaxReturn(['code' => 0,'msg' => '手机号不合法']);
+    $username = $db->getRow("select * from {$ecs->table('users')} where user_id!='{$user_id}' and user_name='{$data['user_name']}'");
+    if (!empty($username)) ajaxReturn(['code' => 0,'msg' => '用户名已存在']);
+    $mobile = $db->getRow("select * from {$ecs->table('users')} where user_id!='{$user_id}' and mobile_phone='{$data['mobile_phone']}'");
+    if (!empty($mobile)) ajaxReturn(['code' => 0,'msg' => '手机号已存在']);
+    $wxuser = $db->getRow("select * from {$ecs->table('users')} where user_id!='{$user_id}' and wxuser='{$data['wxuser']}'");
+    if (!empty($wxuser)) ajaxReturn(['code' => 0,'msg' => '微信号已存在']);
+    
+    if($db->autoExecute($ecs->table("users"), $data, 'UPDATE', "user_id='{$user_id}'")){
+        ajaxReturn(['code' => 1, 'msg' => '修改成功']);
+    }
+    ajaxReturn(['code' => 0, 'msg' => '修改失败']);
 }
 
 if ($act == 'payment'){
@@ -172,7 +350,7 @@ if ($act == 'apply'){
 function post(){
     if (!empty($_POST)) return $_POST;
     $data = file_get_contents('php://input');
-    return is_array(json_decode($data,true)) ? json_decode($data,TRUE) : $data;
+    return is_array(json_decode($data,true)) ? addslashes_deep(json_decode($data,TRUE)) : $data;
 }
 
 if ($act == 'upload'){
@@ -726,6 +904,10 @@ else if ($act == 'act_register') {
         'brand_list' => $brand_list
     ));
     exit();
+}elseif ($act == 'mingdanbrand'){
+    $sql = "SELECT brand_id,brand_name FROM " . $GLOBALS['ecs']->table('brand');
+    $brand_list = $db->getAll($sql);
+    ajaxReturn(['code' => 1,'bandlist' => $brand_list]);
 }
 /* 会员充值和提现申请记录 */
 elseif ($act == 'account_log')
@@ -816,8 +998,11 @@ elseif ($act == 'act_edit_purchase')
     
     if ($purchase_id > 0)
     {
+        
+        unset($purchase['ctime'],$purchase['user_id'],$purchase['status']);
+        
         /* 更新指定记录 */
-        $rs = $db->autoExecute($ecs->table('user_purchase'), $purchase, 'UPDATE', 'purchase_id = ' .$purchase_id . ' AND user_id = ' . $purchase['user_id']);
+        $rs = $db->autoExecute($ecs->table('user_purchase'), $purchase, 'UPDATE', 'purchase_id = ' .$purchase_id . ' AND user_id = ' . $user_id);
         if ($rs)
         {
             show_json_message('修改采购信息成功', '我的采购', 'user.php?act=purchase_list');
@@ -1684,6 +1869,13 @@ function ajaxReturn($data){
 	exit;
 }
 
-
+function checkmobile($mobilephone) {
+    $mobilephone = trim($mobilephone);
+    if(preg_match("/^13[0-9]{1}[0-9]{8}$|17[0-9]{1}[0-9]{8}$|14[0-9]{1}[0-9]{8}$|15[0-9]{1}[0-9]{8}$|18[0-9]{1}[0-9]{8}$/",$mobilephone)){
+        return  $mobilephone;
+    } else {
+        return false;
+    }
+}
 
 ?>

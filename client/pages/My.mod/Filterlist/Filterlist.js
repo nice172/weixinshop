@@ -1,4 +1,5 @@
 // pages/Filterlist/Filterlist.js
+var http = require('../../../request.js');
 Page({
 
   /**
@@ -6,24 +7,9 @@ Page({
    */
   data: {
     choseclass: 0,
-    Lvonenum: 10,
-    Lvtwonum: 2,
-    list: [
-      {
-        icon: "/cache/head.png",
-        name: "石头",
-        time: "2018-06-08 13:50",
-        monetary: "1000",
-        Order: "10"
-      },
-      {
-        icon: "/cache/head.png",
-        name: "石头",
-        time: "2018-06-08 13:50",
-        monetary: "131021",
-        Order: "102413"
-      }
-    ]
+    Lvonenum: 0,
+    Lvtwonum: 0,
+    list: []
   },
 
   /**
@@ -36,13 +22,104 @@ Page({
     }
     this.setData({
       choseclass: index
-    })
+    });
+
+    wx.showLoading({
+      title: '加载中...',
+      mask: true,
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
+    });
+    setTimeout(function(){
+      wx.hideLoading();
+    },30000);
+var app = getApp();
+var _this = this;
+    http.send({
+      url: app.config.ApiUrl +'?act=mingdanlist',
+      method:'GET',
+      success: function(response){
+        wx.hideLoading();
+          var list = [];
+          list.push(response.data.white);
+          list.push(response.data.black);
+          _this.setData({
+            Lvonenum: response.data.whiteTotal,
+            Lvtwonum: response.data.blackTotal,
+            list: list
+          });
+      }
+    });
+
   },
   ChangeClass: function (e) {
-    console.log(e)
     var classtype = e.target.dataset.class
     this.setData({
       choseclass: classtype
+    })
+  },
+  del: function (event){
+
+    wx.showLoading({
+      title: '删除中...',
+      mask: true,
+      success: function (res) { },
+      fail: function (res) { },
+      complete: function (res) { },
+    });
+    setTimeout(function () {
+      wx.hideLoading();
+    }, 30000);
+    var app = getApp();
+    var index = event.currentTarget.dataset.index;
+    var id = event.currentTarget.dataset.id;
+
+    var _this = this;
+    http.send({
+      url: app.config.ApiUrl + "?act=deletemingdan",
+      method: 'GET',
+      data: { id: id },
+      success: function (response) {
+        wx.hideLoading();
+        if (response.data.code == 1) {
+          var list = _this.data.list[_this.data.choseclass];
+          var newlist = [];
+          for (var i in list) {
+            if (i != index) {
+              newlist.push(list[i]);
+            }
+          }
+          var Lvonenum = _this.data.Lvonenum;
+          var Lvtwonum = _this.data.Lvtwonum;
+          if (_this.data.choseclass){
+            Lvtwonum--;
+          }else{
+            Lvonenum--;
+          }
+          var All = _this.data.list;
+          All[_this.data.choseclass] = newlist;
+          _this.setData({
+            list: All,
+            Lvonenum: Lvonenum,
+            Lvtwonum: Lvtwonum
+          });
+        }
+        wx.showToast({
+          title: response.data.msg,
+          icon: 'none',
+          mask: true
+        });
+      }
+    });
+
+  },
+  addBtn: function(){
+    wx.navigateTo({
+      url: '../../mingdan/index?type=' + this.data.choseclass,
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
     })
   },
 
