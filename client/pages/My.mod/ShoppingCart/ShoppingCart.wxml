@@ -1,0 +1,50 @@
+<!--pages/My.mod/ShoppingCart/ShoppingCart.wxml-->
+<!--view class="Head">
+  <text>编辑</text>
+</view-->
+<view>
+  <block wx:for="{{carts}}" wx:key="*this">
+    <view class="Cell">
+      <view class="Shop_head"> <view data-index='{{index}}' bindtap='AddBuyCartItem'>
+              <image class="cart_AddBuyCartItem" src="{{item.isChoseAll?'/images/select_fill.png':'/images/select_default.png'}}"></image>
+            </view><view>{{item.shopname}}</view></view>
+      <view>
+        <block wx:for="{{item.items}}" wx:key="*this" wx:for-item="cartitem" wx:for-index="cartitem_index">
+          <view class="cart_item">
+            <view data-index='{{index}}' data-itemidx="{{cartitem_index}}" bindtap='AddBuyItem'>
+              <image class="cart_isBuyimage" src="{{cartitem.isBuy?'/images/select_fill.png':'/images/select_default.png'}}"></image>
+            </view>
+            <view>
+            <navigator url='/pages/item/item?id={{cartitem.goods_id}}&title={{cartitem.goods_name}}&price={{cartitem.goods_price}}&img={{cartitemdata.goods_img}}'   >
+              <image class="cart_image" src="{{cartitem.goods_img}}"></image></navigator>
+            </view>
+            <view style='width:100%;'>
+              <view class="cart_title">{{cartitem.goods_name}}</view>
+              <view class="cart_price">{{cartitem.goods_price}}</view>
+              <view class="cart_num_view">
+                <view class="Cart_NumBtn" data-id='{{cartitem.goods_id}}' data-num='-1' bindtap='ChangNum'>-</view>
+                <input class="Cart_NumInput" type='number' bindblur="eidtNum" data-id='{{cartitem.goods_id}}' value='{{cartitem.goods_number}}'></input>
+                <view class="Cart_NumBtn"  data-id='{{cartitem.goods_id}}' data-num='1' bindtap='ChangNum'>+</view>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </block>
+</view>
+<view class='bottomAct'>
+  <view  class="AllChoseBtn" bindtap='choseAll'>
+    <view>
+      <image class="AllChoseBtn_isBuyimage" src="{{isChoseAll?'/images/select_fill.png':'/images/select_default.png'}}"></image>
+    </view>
+    <view>全选</view>
+  </view>
+  <view class="Act_Buybtn" bindtap='payment'>结算({{num}})</view>
+  <view class="ShowPriceTitle">
+    <view>合计:
+      <text class="showprice_text">{{allPrice}}元</text>
+    </view>
+    <view>不含运费</view>
+  </view>
+</view>

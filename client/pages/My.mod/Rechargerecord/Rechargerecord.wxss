@@ -1,0 +1,36 @@
+/* pages/My.mod/Rechargerecord/Rechargerecord.wxss */
+page{
+  background: #f6f6f6;
+}
+.list{
+  background: #fff;
+  margin-top: 20rpx;
+}
+.list_cell{
+  height: 100rpx;
+  border-bottom:1px solid #f6f6f6; 
+  display: flex;
+  padding:20rpx 0rpx 20rpx 0rpx; 
+  
+}
+.list_time{
+  margin-left:20rpx;
+  color: #bbb;
+  line-height: 100rpx;
+  font-size: 30rpx;
+  width: 350rpx;
+}
+.list_money{
+  width: 350rpx;
+  text-align: right;
+  font-size: 35rpx;
+}
+.list_money_success{
+  color: #FFA500
+}
+.viewend{
+  text-align: center;
+  color: #dddddd;
+  margin: 30rpx;
+  font-size: 30rpx;
+}

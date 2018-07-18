@@ -1,0 +1,15 @@
+<!--pages/My.mod/Rechargerecord/Rechargerecord.wxml-->
+<view class="list">
+  <block wx:for="{{cord}}" wx:key="*this">
+    <view class="list_cell">
+      <view class="list_time">
+        {{item.add_time}}
+      </view>
+      <view class="list_money">
+        <view class="list_money_num">+{{item.amount}}元</view>
+        <view class="list_money_success">{{item.pay_status}}</view>
+      </view>
+    </view>
+  </block>
+</view>
+<view class='viewend'>——————没有更多了——————</view>

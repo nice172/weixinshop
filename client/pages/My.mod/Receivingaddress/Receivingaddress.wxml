@@ -1,0 +1,36 @@
+<view class="addresslist">
+  <block wx:for="{{address}}" wx:key="*this">
+    <view class="address_cell">
+      <view class="address_name">{{item.consignee}} {{item.mobile}}</view>
+      <view class="address_adres">{{item.addressStr}}</view>
+      <view class="address_action">
+        <view class='addree_setdefaultaddress' data-index='{{index}}' bindtap='Btn_SetDefault'>
+          <view>
+            <image class="address_default_image" src="{{item.is_default == 1?'/images/select_fill.png':'/images/select_default.png'}}"></image>
+          </view>
+          <view>
+            <text>设为默认收货地址</text>
+          </view>
+
+        </view>
+        <view class="address_righttool" data-id='{{item.address_id}}' bindtap='Btn_DeleteAddress'>
+          <view>
+            <image class="address_righttool_image" src="/images/del.png"></image>
+          </view>
+          <view>删除</view>
+        </view>
+          <view class="address_righttool" data-item='{{item}}' bindtap='editAddress'>
+            <view>
+              <image class="address_righttool_image" src="/images/edit.png"></image>
+            </view>
+            <view>编辑</view>
+          </view>
+      </view>
+    </view>
+  </block>
+</view>
+<navigator url='/pages/My.mod/Receivingaddress/editaddress/EditReivingAddress'>
+<view class='addNewaddressBtn'>
+  +添加收货地址
+</view>
+</navigator>

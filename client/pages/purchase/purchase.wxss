@@ -1,0 +1,79 @@
+/* pages/purchase/purchase.wxss */
+
+.parchase_head {
+  background: #3a5fcd;
+  display: flex;
+  color: #fff;
+  font-weight: 800;
+  font-size: 30rpx;
+  height: 50rpx;
+  line-height: 50rpx;
+  text-align: center;
+}
+
+.parchase_list {
+  font-weight: 300;
+  font-size: 28rpx;
+  height: 45rpx;
+  line-height: 45rpx;
+  text-align: center;
+}
+
+.recom_item {
+  display: flex;
+}
+
+.parchase_head_map {
+  width: 200rpx;
+}
+
+.parchase_head_name {
+  width: 390rpx;
+}
+
+.parchase_head_detail {
+  width: 80rpx;
+}
+
+.parchase_head_num {
+  widows: 80rpx;
+}
+
+.parchase_btns {
+  position: absolute;
+  bottom: 10rpx;
+  display: flex;
+  width: 750rpx;
+  text-align: center
+}
+
+.parchase_needbtn {
+  width: 200rpx;
+  height: 40rpx;
+  background: #3a5fcd;
+  color: #fff;
+  border-color: #3a5fcd;
+  font-size: 30rpx;
+  line-height: 40rpx;
+  margin-left: 20rpx;
+}
+.parchase_uppage{
+  width: 100rpx;
+  position: absolute;
+  height: 40rpx;
+  color: #3a5fcd;
+  font-size: 30rpx;
+  line-height: 40rpx;
+  margin-left: 20rpx;
+  right:150rpx;
+}
+.parchase_downpage{
+  width: 100rpx;
+  position: absolute;
+  height: 40rpx;
+  color: #3a5fcd;
+  font-size: 30rpx;
+  line-height: 40rpx;
+  margin-left: 20rpx;
+  right:25rpx;
+}

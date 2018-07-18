@@ -1,0 +1,43 @@
+<!--pages/My.mod/Memberinformation/Memberinformation.wxml-->
+<view class='main'>
+  <view class='cell'>
+    <view class="cell_title">姓名</view>
+    <view class="cell_body">
+      <input class="cell_body_title" value='{{username}}' placeholder='请输入你的姓名' bindinput='usernameInput'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">手机号</view>
+    <view class="cell_body">
+      <input class="cell_body_title" value="{{mobile_phone}}" placeholder='请输入你的手机号' bindinput='phoneInput'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">微信号</view>
+    <view class="cell_body">
+      <input class="cell_body_title" value="{{wxuser}}" placeholder='请输入你的微信号' bindinput='wxuserInput'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">出生日期</view>
+    <view class="cell_body">
+        <picker mode="date" value="{{userinfo.birthday}}" start="1900-01-01" end="2099-12-01" bindchange="bindDateChange">
+    <view class="picker">
+      {{userinfo.birthday}}
+    </view>
+  </picker>
+    </view>
+  </view>
+   <view class='cell'>
+    <view class="cell_title">所在地</view>
+    <view class="cell_body">
+      <!-- <input class="cell_body_title" placeholder='请选择所在城市'></input> -->
+<picker mode="region" bindchange="bindRegionChange" value="{{region}}" custom-item="{{customItem}}">
+    <view class="picker">
+      {{region[0]}}，{{region[1]}}，{{region[2]}}
+    </view>
+  </picker>
+    </view>
+  </view>
+</view>
+<button class="RedBtn" bindtap='RedBtn'>确认修改</button>

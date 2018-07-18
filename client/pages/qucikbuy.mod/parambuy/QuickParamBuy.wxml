@@ -1,0 +1,106 @@
+<!--pages/qucikbuy.mod/parambuy/QuickParamBuy.wxml-->
+<view>
+  <view class="Prarm_view">
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">分类：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">品牌：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">型号：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">铜厚：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">板厚：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">尺寸：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+  </view>
+  <view class="Prarm_view">
+    <!--用户地址-->
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">数量：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">配送地址：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">详细地址：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="Prarm_view">
+    <!--用户信息-->
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">联系人:</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">联系电话:</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+
+  </view>
+
+  <view class="Prarm_view">
+    <button>提交需求</button>
+  </view>
+
+</view>

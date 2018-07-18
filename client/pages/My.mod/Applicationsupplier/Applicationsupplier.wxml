@@ -1,0 +1,68 @@
+<!--pages/My.mod/Applicationsupplier.wxml-->
+<view class='main'>
+  <view class='cell'>
+    <view class="cell_title">供应商名称:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" placeholder='请输入供应商名称' bindinput='suppliers_name' type='text'></input>
+    </view>
+  </view>
+  <view class='cell_height'>
+    <view class="cell_title">描述:</view>
+    <view class="cell_body">
+      <textarea  class="cell_body_textarea" bindinput='suppliers_desc' placeholder='请输入描述!'>
+      
+      </textarea>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title mini_text">个人/公司名称:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" bindinput='company_name' placeholder='请输入你的个人/公司名称' type='text'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">公司Logo:</view>
+    <view class="cell_body">
+      <image bindtap='ChoseLogo' class='cell_body_imgAdd' src="{{logoImg != null && logoImg != ''?logoImg:'/images/addimg.png'}}"></image>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">所在地区:</view>
+    <view class="cell_body">
+        <view class="Input_Location">
+        <picker class="Input_Location_picker" mode="multiSelector" range="{{ShowCitys}}" range-key="region_name" bindchange="bindRegionChange" bindcolumnchange="bindcolumnchange" value="{{options}}">
+          <view class="Input_Location_picker_view">
+            <view class="Input_Location_item">{{CityText[0]}}</view>
+            <view class="Input_Location_item">{{CityText[1]}}</view>
+            <view class="Input_Location_item">{{CityText[2]}}</view>
+          </view>
+        </picker>
+      </view>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">详细地址:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" bindinput='company_address' placeholder='详细地址' type='text'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title mini_text">营业执照/身份证照片:</view>
+    <view class="cell_body">
+      <image class='cell_body_imgAdd' bindtap='idcardImgClick' src="{{idcardImg ? idcardImg : '/images/addimg.png'}}"></image>
+    </view>
+  </view>
+   <view class='cell'>
+    <view class="cell_title">联系人:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" bindinput='company_contactor' placeholder='请输入联系人' type='text'></input>
+    </view>
+  </view>
+   <view class='cell'>
+    <view class="cell_title">联系电话:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" bindinput='company_phone' placeholder='请输入联系电话' type='text'></input>
+    </view>
+  </view>
+</view>
+<button class="RedBtn" bindtap='confirmBtn'>确认申请</button>

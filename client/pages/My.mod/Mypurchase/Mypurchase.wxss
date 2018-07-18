@@ -1,0 +1,62 @@
+/* pages/My.mod/Mypurchase/Mypurchase.wxss */
+
+page {
+  background: #f6f6f6;
+}
+
+.items_view {
+  margin-top: 25rpx;
+}
+
+.item_view {
+  background: #fff;
+  margin-bottom: 20rpx;
+  border-top: 1px solid #efefef;
+  border-bottom: 1px solid #dfdfdf;
+  padding: 10rpx 40rpx 10rpx 40rpx;
+}
+
+.item_status, .item_detail, .item_name {
+  border-bottom: 1px solid #efefef;
+  font-size: 38rpx;
+  color: #444;
+  width: 100%;
+}
+
+.item_detail {
+  padding: 5rpx 0rpx 5rpx 0rpx;
+}
+
+.item_name {
+  height: 90rpx;
+  line-height: 90rpx;
+  font-size: 42rpx;
+}
+
+.item_status {
+  height: 80rpx;
+  line-height: 80rpx;
+}
+
+.item_actions {
+  height: 80rpx;
+}
+
+.item_action_btn, .item_action_btn_red {
+  font-size: 30rpx;
+  width: 160rpx;
+  height: 60rpx;
+  margin-top: 5rpx;
+  line-height: 60rpx;
+  border: 1px solid #aaa;
+  color: #aaa;
+  margin-left: 25rpx;
+  border-radius: 60rpx;
+  text-align: center;
+  float: right;
+}
+
+.item_action_btn_red {
+  border: 1px solid #ff8080;
+  color: #ff8080;
+}

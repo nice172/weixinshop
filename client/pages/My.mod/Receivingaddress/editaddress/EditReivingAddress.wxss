@@ -1,0 +1,48 @@
+/* pages/My.mod/Receivingaddress/editaddress/EditReivingAddress.wxss */
+@import "/template/Input_Location.wxss";
+page {
+  background: #f6f6f6;
+}
+
+.main {
+  background: #fff;
+  margin-bottom: 20rpx;
+  margin-top: 20rpx; 
+}
+
+.cell {
+  display: flex;
+  padding: 10rpx 20rpx 10rpx 20rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  width: 710rpx;
+  border-bottom:1px solid #eeeeee 
+}
+
+.cell_title {
+  margin-left: 20rpx;
+  width: 150rpx;
+  font-size: 30rpx;
+  color: #ccc;
+}
+
+.cell_body {
+  width: 500rpx;
+  font-size: 30rpx;
+}
+
+.cell_body_title {
+  height: 60rpx;
+  margin: 10rpx;
+  width: 100%;
+  font-size: 30rpx;
+}
+.RedBtn{
+  background: #FF6060;
+  border: none;
+  margin: 20rpx;
+  color: #fff;
+}
+.RedBtn:hover{
+    background: #FF3030;
+}

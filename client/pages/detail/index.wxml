@@ -1,0 +1,24 @@
+<view class="main">
+
+<view class="name">{{data.name}}</view>
+
+
+<view class="params" style="margin-top:10px;">
+
+<view><text>数量:</text>{{data.pur_num}}</view>
+<view><text>品牌:</text>{{data.brand}}</view>
+<view><text>型号:</text>{{data.cate}}</view>
+<view><text>配送地:</text>{{data.province}}{{data.city}}{{data.district}}{{data.address}}</view>
+<view><text>发布时间:</text>{{data.ctime}}</view>
+
+</view>
+
+
+<view class="content" style="margin-top:10px;">
+
+<view><text>详细内容:</text></view>
+<view class="con">{{data.content}}</view>
+
+</view>
+
+</view>

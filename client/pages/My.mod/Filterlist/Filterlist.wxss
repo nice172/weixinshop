@@ -1,0 +1,102 @@
+/* pages/Filterlist/Filterlist.wxss */
+
+page {
+  background: #f6f6f6;
+}
+
+.TipsView {
+  text-align: center;
+  color: #999;
+  margin: 50rpx 0rpx 30rpx 0rpx;
+  font-size: 34rpx;
+}
+
+.Head_view {
+  position: fixed;
+  height: 73rpx;
+  left: 0px;
+  top: 0px;
+}
+
+.Head_type {
+  background: #fff;
+  height: 73rpx;
+  width: 750rpx;
+}
+
+.Head_AllClass {
+  display: flex;
+  width: 840rpx;
+}
+
+.Head_Scroll {
+  width: 840rpx;
+  position: relative;
+}
+
+.Head_class {
+  font-size: 30rpx;
+  width: 355rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+  margin: 15rpx 10rpx 15rpx 10rpx;
+  color: #999;
+}
+
+.Head_classon {
+  color: orange;
+}
+
+.Head_Scrollclass {
+  background: orange;
+  height: 3rpx;
+  width: 355rpx;
+  transition: left 500ms;
+  position: absolute;
+}
+
+.ref_view {
+  display: flex;
+  padding: 20rpx;
+  border-bottom: 1px solid #f6f6f6;
+  background: #fff;
+  height: 100rpx;
+}
+
+.act_Del_image {
+  width: 80rpx;
+  height: 80rpx;
+  margin: 10rpx;
+  margin-left:30rpx; 
+}
+
+.AllReferrals {
+  margin-top: 80rpx;
+}
+
+
+.ref_center {
+  border-right: 1px solid #f6f6f6;
+}
+
+.ref_name {
+  margin-left: 20rpx;
+  font-size: 40rpx;
+  line-height: 100rpx;
+  height: 100rpx;
+  width: 520rpx;
+  overflow: hidden;
+}
+.addFilt{
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 750rpx;
+  text-align: center;
+  color: #fff;
+  background: #ff6060;
+  height: 80rpx;
+  line-height: 80rpx;
+
+}

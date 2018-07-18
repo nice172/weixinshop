@@ -1,0 +1,31 @@
+<!--pages/My.mod/MyProducts/My Products.wxml-->
+<view class="items_view">
+  <block wx:for="{{items}}" wx:key="*this">
+    <view class="item_view">
+      <view class="item_name">{{item.goods_name}}</view>
+      <view class="item_detail">
+        <view>
+          <image class="item_image" src='{{item.img}}'></image>
+        </view>
+        <view class="item_types">
+          <block wx:for="{{item.properties}}" wx:key="*this" wx:for-index='type' wx:for-item="typevalue">
+            <view class="item_type">{{typevalue.name}}:{{typevalue.value}}</view>
+          </block>
+        </view>
+      </view>
+      <view class="item_stockAndMoney">
+        <view class="item_money">价格:</view>
+        <view class='item_Money_text'>{{item.shop_price}}</view>
+        <view class="item_stock">库存:{{item.goods_number}}件</view>
+      </view>
+      <view class="item_statusAndActBtn">
+        <view class="item_status">状态:</view>
+        <view class="item_status_text">{{item.is_on_sale == "1"?"显示":"隐藏"}}</view>
+
+        <view class="item_actions">
+          <view class="item_action_btn">修改</view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

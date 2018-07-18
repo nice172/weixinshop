@@ -1,0 +1,69 @@
+/* pages/SearchView/SearchView.wxss */
+
+.Head {
+  height: 80rpx;
+  background: #fff;
+  line-height: 80rpx;
+  display: flex;
+  border-bottom: 1px solid #efefef;
+}
+
+.Head_textinput {
+  width: 600rpx;
+  padding: 10rpx 0rpx 10rpx 30rpx;
+}
+
+.Head_serachBtn {
+  width: 150rpx;
+  height: 100%;
+  background: #ff6060;
+  text-align: center;
+  color: #fff;
+  font-weight: 800;
+}
+
+.types_view {
+  position: absolute;
+  top: 80rpx;
+  bottom: 0rpx;
+  left: 0rpx;
+  width: 100%;
+}
+
+.scroll_view {
+  height: 100%;
+  width: 180rpx;
+  position: absolute;
+  left: 0rpx;
+  top: 0rpx;
+  text-align: center;
+  background: #f6f6f6;
+}
+
+.alltypes_type, .alltypes_typeon {
+  height: 80rpx;
+  line-height: 80rpx;
+}
+
+.alltypes_typeon {
+  background: #fff;
+  border: 1px solid #efefef;
+  border-right: none;
+  border-left: 3px solid #ff8080;
+}
+.scroll_value_view{
+  position: absolute;
+  left: 180rpx;
+  top: 0rpx;
+  height: 100%;
+  width: 570rpx;
+  font-size: 34rpx;
+  color: #888;
+}
+.allvalues_value,.allvalues_valueon{
+  float: left;
+  margin: 20rpx;
+}
+.allvalues_valueon{
+  background: #ff8080
+}

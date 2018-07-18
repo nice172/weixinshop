@@ -1,0 +1,68 @@
+{
+  "pages": [
+    "pages/shop/shop",
+    "pages/index/index",
+    "pages/addCgi/addCgi",
+    "pages/purchase/purchase",
+    "pages/quickbuy/qucikbuy",
+    "pages/my/my",
+    "pages/item/item",
+    "pages/qucikbuy.mod/parambuy/QuickParamBuy",
+    "pages/qucikbuy.mod/imagebuy/QuickImageBuy",
+    "pages/qucikbuy.mod/VidioBuy/QuickVidioBuy",
+    "pages/purchase/AddNewNeed/AddNewNeed",
+    "pages/My.mod/Recharge/RechargeView",
+    "pages/My.mod/Applicationsupplier/Applicationsupplier",
+    "pages/My.mod/Receivingaddress/Receivingaddress",
+    "pages/My.mod/Receivingaddress/editaddress/EditReivingAddress",
+    "pages/My.mod/Rechargerecord/Rechargerecord",
+    "pages/My.mod/Memberinformation/Memberinformation",
+    "pages/My.mod/Fullorder/Fullorder",
+    "pages/My.mod/MyReferrals/MyReferrals",
+    "pages/My.mod/Filterlist/Filterlist",
+    "pages/My.mod/Mypurchase/Mypurchase",
+    "pages/My.mod/MyProducts/MyProducts",
+    "pages/SearchView/SearchView",
+    "pages/My.mod/ShoppingCart/ShoppingCart",
+    "pages/Login/Login",
+    "pages/Login/Regeister",
+    "pages/Login/Forget/ForgetPassword",
+    "pages/detail/index",
+    "pages/List/list"
+  ],
+  "window": {
+    "backgroundColor": "#F6F6F6",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "覆铜板超市",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "list": [
+      {
+        "selectedIconPath": "images/Bar chart.png",
+        "pagePath": "pages/shop/shop",
+        "iconPath": "images/Bar chart.png",
+        "text": "库存查询"
+      },
+      {
+        "selectedIconPath": "images/record.png",
+        "iconPath": "images/record.png",
+        "pagePath": "pages/purchase/purchase",
+        "text": "发布需求"
+      },
+      {
+        "selectedIconPath": "images/Add.png",
+        "iconPath": "images/Add.png",
+        "pagePath": "pages/quickbuy/qucikbuy",
+        "text": "快速下单"
+      },
+      {
+        "selectedIconPath": "images/home.png",
+        "iconPath": "images/home.png",
+        "pagePath": "pages/my/my",
+        "text": "会员中心"
+      }
+    ]
+  }
+}

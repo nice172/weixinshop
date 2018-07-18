@@ -1,0 +1,101 @@
+<!--pages/shop/shop.wxml-->
+<view class="head_view">
+  <!--库存查询 店铺头图片-->
+  <image class="headimg" src="{{head_img_url}}"></image>
+</view>
+<view class="hotip_view">
+  <!--热点-->
+  <view class="hotip_showlable">
+    <text style='color:red'>热</text>
+    <text>点</text>
+  </view>
+  <view class="hotip_title">
+    <swiper circular="true" class="hotip_title_swiper" autoplay="true" vertical="true">
+      <block wx:for="{{hotip_titles}}" wx:key="*this">
+        <swiper-item>
+          <text class="hotip_item_title"> {{item}}</text>
+        </swiper-item>
+      </block>
+    </swiper>
+  </view>
+</view>
+<view class="detail_view">
+  <view class="detail_head_view">
+    <view class="detail_head_item">
+      <view>{{detail_shop_brand}} 家</view>
+      <view class="detail_head_itemlabel">
+        <view>
+          <image class="detail_head_icon" src='/images/s_home.png'></image>
+        </view>
+        <view>品牌板料</view>
+      </view>
+    </view>
+    <view class="detail_head_item">
+      <view>{{detail_shop_seller}} 家</view>
+      <view class="detail_head_itemlabel">
+        <view>
+          <image class="detail_head_icon" src='/images/user_I.png'></image>
+        </view>
+        <view>库存商家 </view>
+      </view>
+    </view>
+    <view class="detail_head_item">
+      <view>{{detail_shop_inventory}} 件</view>
+      <view class="detail_head_itemlabel">
+        <view>
+          <image class="detail_head_icon" src='/images/s_add.png'>
+
+          </image>
+        </view>
+        <view>库存产品</view>
+      </view>
+    </view>
+    <view class="detail_head_item">
+      <view>{{detail_shop_price}} 元</view>
+      <view class="detail_head_itemlabel">
+        <view>
+          <image class="detail_head_icon" src='/images/s_money.png'></image>
+        </view>
+        <view>累计交易额 </view>
+      </view>
+    </view>
+  </view>
+  <view>
+    <!--商家仓库展示-->
+    <swiper class="detail_depot_swiper" indicator-dots="true" autoplay="true">
+      <block wx:for="{{detail_depot_showimg}}" wx:key="*this">
+        <swiper-item>
+          <image class="detail_depot_image" src="{{item}}"></image>
+        </swiper-item>
+      </block>
+    </swiper>
+
+  </view>
+  <view>
+    <!--商品推荐块-->
+    <view class="recom_head">----------热销推荐----------</view>
+    <view class="recom_block">
+      <view class="recom_item" wx:for="{{recom_items}}" wx:key="*this" data-title="{{item.name}}" data-id='{{item.id}}' data-img='{{imageRoot}}{{item.goods_img}}' data-price="{{item.shop_price}}" bindtap='OpenItem'>
+        <view class="recom_item_img">
+          <image class="recom_item_img" src="{{imageRoot}}{{item.goods_img}}"></image>
+        </view>
+        <view class="recom_item_title">{{item.name}}</view>
+        <view wx:if="{{item.negotiate == null || !item.negotiate}}" class="recom_item_price">￥ {{item.shop_price}}</view>
+        <view wx:else class="recom_item_price">议价</view>
+        <view class="recom_item_buybtn">购买</view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view>
+  <!--浮动按钮快-->
+  <navigator url='/pages/SearchView/SearchView'>
+    <view class="Search_View">
+      <view>
+        <image class="search_view_image" src='/images/search_w.png'></image>
+      </view>
+      <view class='search_view_text'>查询</view>
+    </view>
+  </navigator>
+</view>

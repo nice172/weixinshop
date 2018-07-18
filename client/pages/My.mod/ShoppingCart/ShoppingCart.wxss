@@ -1,0 +1,116 @@
+/* pages/My.mod/ShoppingCart/ShoppingCart.wxss */
+
+page {
+  background: #f6f6f6;
+}
+
+.Cell {
+  background: #fff;
+  padding: 20rpx;
+  margin-top: 20rpx;
+}
+
+.Shop_head {
+  line-height: 60rpx;
+  height: 60rpx;
+  padding-bottom: 20rpx;
+  display: flex;
+  border-bottom: 1px solid #f8f8f8;
+}
+
+.cart_image {
+  width: 150rpx;
+  height: 150rpx;
+  margin: 10rpx;
+}
+
+.cart_title {
+  font-size: 28rpx;
+}
+
+.cart_item {
+  display: flex;
+  height: 170rpx;
+}
+
+.cart_price {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #ff6060;
+}
+
+.cart_num_view {
+  display: flex;
+  float: right;
+}
+
+.Cart_NumBtn {
+  width: 50rpx;
+  height: 50rpx;
+  line-height: 50rpx;
+  border: 1px solid #ccc;
+  color: #ccc;
+  text-align: center;
+}
+
+.Cart_NumInput {
+  height: 50rpx;
+  min-height: 50rpx;
+  width: 80rpx;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-right: none;
+  color: #ccc;
+  text-align: center;
+  padding: none;
+  margin: none;
+}
+
+.cart_isBuyimage {
+  width: 40rpx;
+  height: 40rpx;
+  margin: 65rpx 0rpx 65rpx 0rpx;
+}
+.cart_AddBuyCartItem{
+   width: 40rpx;
+  height: 40rpx;
+  margin: 10rpx;
+}
+
+.bottomAct {
+  height: 100rpx;
+  position: fixed;
+  left: 0rpx;
+  width: 750rpx;
+  bottom: 0rpx;
+  background: #fff;
+}
+.Act_Buybtn{
+  width: 220rpx;
+  color: #fff;
+  background: #ff6060;
+  height: 100rpx;
+  line-height: 100rpx;
+  text-align: center;
+  float: right;
+}
+.ShowPriceTitle{
+  float: right;
+  font-size: 32rpx;
+  margin: 10rpx;
+  color: #bbb;
+}
+.showprice_text{
+  color: #ff2020;
+}
+.AllChoseBtn{
+  float: left;
+  display: flex;
+  line-height: 100rpx;
+  padding-left:20rpx; 
+}
+.AllChoseBtn_isBuyimage{
+   width: 40rpx;
+  height: 40rpx;
+  margin: 30rpx 0rpx 30rpx 0rpx;
+}

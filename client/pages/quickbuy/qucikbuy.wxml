@@ -1,0 +1,17 @@
+<!--pages/quickbuy/qucikbuy.wxml-->
+<view class="Quick_Item" bindtap='OpenPrarmBuy'>
+  <view class="Quick_Item_title">按板材参数下单<image class="quick_more" src='/images/more.png'></image></view>
+   <view class="Quick_Item_explain">根据你的需要选择板材参数</view>
+</view>
+<view class="Quick_Item">
+  <view class="Quick_Item_title">上传采购文件下单<image class="quick_more" src='/images/more.png'></image></view>
+   <view class="Quick_Item_explain">上传你的采购文件到平台</view>
+</view>
+<view class="Quick_Item" bindtap='OpenImageBuy'>
+  <view class="Quick_Item_title">拍照下单<image class="quick_more" src='/images/more.png'></image></view>
+   <view  class="Quick_Item_explain">直接拍照采购单并上传到平台</view>
+</view>
+<view class="Quick_Item" bindtap='OpenVidioBuy'>
+  <view class="Quick_Item_title">语音下单<image class="quick_more" src='/images/more.png'></image></view>
+   <view class="Quick_Item_explain">将你的采购需求语音留言</view>
+</view>

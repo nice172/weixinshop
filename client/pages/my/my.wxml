@@ -1,0 +1,218 @@
+<!--index.wxml-->
+<view class='container'>
+  <view class='head'>
+    <view class='background'>
+    </view>
+    <view class='l view'>
+      <rich-text class='title'>余额</rich-text>
+      <rich-text class='detail'>{{user.surplus}}</rich-text>
+      <navigator url="/pages/My.mod/Recharge/RechargeView" hover-class="navigator-hover">
+        <text class='operation' bindtap='toRecharge'>充值</text>
+      </navigator>
+    </view>
+    <view class='c view'>
+      <image src='{{user.avatarUrl == null?"/images/user_default.jpg": user.avatarUrl}}'></image>
+      <text class='name'>{{user.username}}</text>
+      <rich-text class='level' wx:if="{{0 == user.type}}">普通会员</rich-text>
+      <rich-text class='level' wx:if="{{1 == user.type}}">高级会员</rich-text>
+      <text class='code'>编号 : {{user.gender}}</text>
+      <navigator url='/pages/Login/Login'>
+      <button class="GetUserBtn" wx:if="{{isLogin == false}}" >登录/注册</button></navigator>
+      <!--open-type="getUserInfo" bindgetuserinfo="bindGetUserInfo"-->
+    </view>
+    <view class='r view'>
+      <rich-text class='title'>积分</rich-text>
+      <rich-text class='detail'>{{user.integral}}</rich-text>
+      <text class='operation' bindtap='toIntegration'>查看</text>
+    </view>
+  </view>
+  <view class='main'>
+    <navigator url="/pages/My.mod/Fullorder/Fullorder?index=4">
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/record.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            订单记录
+          </rich-text>
+          <rich-text class='right-text'>
+            查看订单记录
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+    <view class='cell_left_view'>
+      <navigator url="/pages/My.mod/Fullorder/Fullorder?index=1">
+        <view class="cell_left">
+          <view>
+            <image class='cell_left_icon' src='/images/waitpay.png'></image>
+          </view>
+          <view class='cell_left_text'>
+            <rich-text>待付款</rich-text>
+          </view>
+        </view>
+      </navigator>
+      <navigator url="/pages/My.mod/Fullorder/Fullorder?index=2">
+        <view class="cell_left">
+          <view>
+            <image class='cell_left_icon' src='/images/send.png'></image>
+          </view>
+          <view class='cell_left_text'>
+            <rich-text>待发货</rich-text>
+          </view>
+        </view>
+      </navigator>
+      <navigator url="/pages/My.mod/Fullorder/Fullorder?index=3">
+        <view class="cell_left">
+          <view>
+            <image class='cell_left_icon' src='/images/recent.png'></image>
+          </view>
+          <view class='cell_left_text'>
+            <rich-text>待收货</rich-text>
+          </view>
+        </view>
+      </navigator>
+      <navigator url="/pages/My.mod/Fullorder/Fullorder?index=5">
+        <view class="cell_left">
+          <view>
+            <image class='cell_left_icon' src='/images/tuihuo.png'></image>
+          </view>
+          <view class='cell_left_text'>
+            <rich-text>退换货</rich-text>
+          </view>
+        </view>
+      </navigator>
+    </view>
+  </view>
+  <view class='main'>
+    <navigator url='/pages/My.mod/MyProducts/MyProducts'>
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/product.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            我的产品
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+    <navigator url='/pages/My.mod/Mypurchase/Mypurchase'>
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/qiugou.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            我的求购
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+  </view>
+
+  <view class='main'>
+    <navigator url='/pages/My.mod/ShoppingCart/ShoppingCart'>
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/cart.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            我的购物车
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+    <navigator url='/pages/My.mod/MyReferrals/MyReferrals'>
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/tuijian.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            我的推荐
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+    <navigator url='/pages/My.mod/Filterlist/Filterlist'>
+      <view class='cell' bindtap='toRecommendMe'>
+        <view class='icon'>
+          <image src='../../images/mingdan.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            黑/白名单
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+  </view>
+
+  <view class='main'>
+    <navigator url="/pages/My.mod/Rechargerecord/Rechargerecord">
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/coupon.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            充值记录
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+  </view>
+  <view class='main'>
+    <navigator url="/pages/My.mod/Applicationsupplier/Applicationsupplier">
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/supplier.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            申请供应商
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+  </view>
+  <view class='main'>
+    <navigator url='/pages/My.mod/Receivingaddress/Receivingaddress'>
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/address.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            收货地址管理
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+    <navigator url="/pages/My.mod/Memberinformation/Memberinformation">
+      <view class='cell'>
+        <view class='icon'>
+          <image src='../../images/setting.png'></image>
+        </view>
+        <view class='content'>
+          <rich-text>
+            会员资料设置
+          </rich-text>
+          <image src='../../images/rightarrow.png' class='right'></image>
+        </view>
+      </view>
+    </navigator>
+  </view>
+</view>

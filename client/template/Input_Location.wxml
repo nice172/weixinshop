@@ -1,0 +1,11 @@
+<template name="Input_Location">
+  <view class="Input_Location">
+        <picker class="Input_Location_picker" mode="multiSelector" range="{{ShowCitys}}" range-key="region_name" bindchange="bindRegionChange" bindcolumnchange="bindcolumnchange" value="{{City}}">
+          <view class="Input_Location_picker_view">
+            <view class="Input_Location_item">{{City[0]}}</view>
+            <view class="Input_Location_item">{{City[1]}}</view>
+            <view class="Input_Location_item">{{City[2]}}</view>
+          </view>
+        </picker>
+      </view>
+</template>

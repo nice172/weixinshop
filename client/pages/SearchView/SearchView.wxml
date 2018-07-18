@@ -1,0 +1,55 @@
+<!--pages/SearchView/SearchView.wxml-->
+<view class="Head">
+  <view class="Head_textinput">
+    <input placeholder='请输入关键词' bindinput='getKeywords'></input>
+  </view>
+  <view class="Head_serachBtn" bindtap='searchClick'>搜索</view>
+</view>
+<view class="types_view">
+    <scroll-view class="scroll_view" scroll-x="true">
+      <block wx:for="{{leftMenu}}" wx:key="*this">
+        <view bindtap='changeMenu' data-index='{{index}}' class="alltypes_type{{selected==index?'on':''}}">{{item}}</view>
+      </block>
+    </scroll-view>
+        <scroll-view class="scroll_value_view" scroll-y="true">
+
+      <view wx:if="{{cateIsShow}}">
+      
+      <block wx:for="{{categoryList}}" wx:for-index="index" wx:for-item="item" wx:key="*this">
+        
+        <view bindtap='clickCate' wx:for="{{item}}"
+         wx:for-index="idx" wx:for-item="items"
+          data-index='{{idx}}' data-cid='{{items.id}}'
+          class="allvalues_value{{idx == cateIndex?'on':''}}">
+          {{items.name}}
+          </view>
+
+      </block>
+
+      </view>
+
+    <view wx:if="{{brandIsShow}}">
+    
+    <block wx:for="{{BrandList}}" wx:for-index="index" wx:for-item="item" wx:key="*this">
+        <view bindtap='clickBrand' wx:for="{{item}}"
+         wx:for-index="idx" wx:for-item="items"
+          data-index='{{idx}}' data-brand_id='{{items.brand_id}}'
+          class="allvalues_value{{idx == BrandIndex?'on':''}}">
+          {{items.brand_name}}
+          </view>
+      </block>
+    
+    </view>
+
+    <view wx:if="{{attrIsShow}}">
+    
+      <block wx:for="{{attrValue}}" wx:for-index="index" wx:for-item="item" wx:key="*this">
+        <view bindtap='clickAttr' data-index='{{index}}' data-attrid="{{item.goods_attr_id}}" class="allvalues_value{{index == attrIndex?'on':''}}">
+          {{item.goods_attr_val}}
+          </view>
+      </block>
+
+    </view>
+
+    </scroll-view>
+</view>

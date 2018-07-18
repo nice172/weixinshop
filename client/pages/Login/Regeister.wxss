@@ -1,0 +1,10 @@
+/* pages/Login/Regeister.wxss */
+@import "/template/TableCell.wxss";
+
+.flexview {
+  display: flex;
+}
+.icon_choseview{
+  width: 30rpx;
+  height: 30rpx;
+}

@@ -1,0 +1,37 @@
+<!--pages/My.mod/Receivingaddress/editaddress/EditReivingAddress.wxml-->
+<import src="/template/Input_Location.wxml" />
+<view class='main'>
+  <view class='cell'>
+    <view class="cell_title">收件人</view>
+    <view class="cell_body">
+      <input class="cell_body_title" placeholder='请输入收件人' value='{{consignee}}' data-name='consignee' bindinput='onchange' type='text'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">联系电话</view>
+    <view class="cell_body">
+      <input class="cell_body_title" placeholder='请输入联系电话' value='{{mobile}}'  data-name="mobile" bindinput='onchange' type='text'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">所在地址</view>
+    <view class="cell_body">
+      <view class="Input_Location">
+        <picker class="Input_Location_picker" mode="multiSelector" range="{{ShowCitys}}" range-key="region_name" bindchange="bindRegionChange" bindcolumnchange="bindcolumnchange" value="{{options}}">
+          <view class="Input_Location_picker_view">
+            <view class="Input_Location_item">{{CityText[0]}}</view>
+            <view class="Input_Location_item">{{CityText[1]}}</view>
+            <view class="Input_Location_item">{{CityText[2]}}</view>
+          </view>
+        </picker>
+      </view>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">详细地址</view>
+    <view class="cell_body">
+      <input class="cell_body_title" data-name="address" value='{{address}}' bindinput='onchange' placeholder='请输入详细地址' type='text'></input>
+    </view>
+  </view>
+</view>
+<button class="RedBtn" bindtap='add_new_address'>保存地址</button>

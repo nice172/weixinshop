@@ -1,0 +1,145 @@
+/**index.wxss**/
+page{
+  background:#f6f6f6;
+}
+.container {
+  padding: 0;
+  font-size: 15px;
+  position: relative;
+  width: 100%;
+  overflow-x: hidden;
+}
+.head {
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  width: 100%;
+  padding-top: 20px;
+  box-sizing: border-box;
+  background: #fff;
+}
+.GetUserBtn{
+  margin-top: 20rpx;
+  background: rgba(0,0, 0, 0);
+  width: 200rpx;
+  border: 1px solid #fff;
+  border-radius:5px; 
+  color: #fff;
+  font-size: 26rpx;
+  line-height: 60rpx;
+  height: 60rpx;
+}
+.background {
+  background-color: #FC5451;
+  width: 800px;
+  height: 240px;
+  border-radius: 50%;
+  position: absolute;
+  top: -40px;
+  left: calc((100% - 800px)/2);
+  z-index: -1;
+}
+.head .view {
+  width: 33%;
+  color: white;
+  text-align: center;
+}
+
+.head .c image,.head .c open-data {
+  width: 60px;
+  height: 60px;
+  border-radius: 100%;
+  border: 2px solid white;
+}
+.head .detail {
+  color: #F8FF22;
+}
+.head .l, .head .r {
+  margin-top: 25px;
+}
+.head rich-text, .head text {
+  line-height: 30px;
+}
+.head .name, .head .code {
+  display: block;
+  width: 100%;
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+  overflow: hidden;
+}
+.head .operation {
+  display: inline-block;
+  border-radius: 20px;
+  width: 60px;
+  height: 24px;
+  line-height: 24px;
+  border: 2px solid white;
+}
+.main {
+  width: 100%;
+  padding: 0 10px 0 15px;
+  box-sizing: border-box;
+  background: #fff;
+  margin-bottom:20rpx; 
+}
+.cell {
+  height: 50px;
+  line-height: 50px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  border-bottom:1px solid #f3f3f3 
+}
+.cell .icon {
+  width: 30px;
+  height: 100%;
+  padding-top: 10px;
+  margin-right: 10px;
+}
+.icon image {
+  width: 25px;
+  height: 25px;
+  margin-bottom: 6px;
+}
+.content image{
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: calc((100% - 20px)/2);
+  right: 0;
+}
+.content {
+  width: calc(100% - 30px);
+  position: relative;
+  line-height: 50px;
+  color: #515151;
+}
+.content rich-text {
+  display: inline-block;
+}
+.cell_left{
+  float: left;
+text-align: center;
+width: 25%;
+}
+.cell_left_icon{
+    width: 60rpx;
+    height: 60rpx;
+    margin-top:35rpx; 
+}
+.cell_left_text{
+    height: 30rpx;
+    font-size: 30rpx;
+    line-height: 30rpx;
+    margin-bottom: 35rpx;
+}
+.cell_left_view{
+  height: 140rpx;
+  width: 100%;
+}
+.content .right-text {
+  position: absolute;
+  right: 25px;
+  color: #aaa;
+}

@@ -1,0 +1,14 @@
+.Input_Location_picker_view,{
+  display: flex;
+  }
+  .Input_Location_picker{
+    width: 100%;
+    height: 100%;
+  }
+.Input_Location_item{
+  float: left;
+  height: 60rpx;
+  margin: 10rpx;
+  line-height: 60rpx;
+  padding-left:14rpx; 
+}

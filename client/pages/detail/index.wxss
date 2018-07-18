@@ -1,0 +1,33 @@
+page{
+  background: #f2f2f2;
+}
+.name {
+  padding:10px;
+  background: #ffffff;
+  font-weight: 800;
+  font-size: 26rpx;
+  color: #000;
+}
+.params, .content{
+  padding:10px;
+  background: #ffffff;
+  color: #666;
+  font-size: 24rpx;
+}
+.params view{
+  margin: 5px 0;
+}
+.params text{
+  font-weight: 800;
+  font-size: 26rpx;
+  color: #000;
+  margin-right: 10px;
+}
+.content text {
+    font-weight: 800;
+  font-size: 26rpx;
+  color: #000;
+}
+.content .con{
+  margin-top: 10px;
+}

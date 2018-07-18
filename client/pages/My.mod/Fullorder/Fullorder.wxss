@@ -1,0 +1,134 @@
+/* pages/My.mod/Fullorder/Fullorder.wxss */
+
+page {
+  background: #f6f6f6;
+}
+
+.Head_view {
+  position: fixed;
+  height: 73rpx;
+  left: 0px;
+  top: 0px;
+}
+
+.Head_type {
+  background: #fff;
+  height: 73rpx;
+  width: 750rpx;
+}
+
+.Head_AllClass {
+  display: flex;
+  width: 840rpx;
+}
+
+.Head_Scroll {
+  width: 840rpx;
+  position: relative;
+}
+
+.Head_class {
+  font-size: 30rpx;
+  width: 120rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+  margin: 15rpx 10rpx 15rpx 10rpx;
+  color: #999;
+}
+
+.Head_classon {
+  color: orange;
+}
+
+.Head_Scrollclass {
+  background: orange;
+  height: 3rpx;
+  width: 120rpx;
+  transition: left 500ms;
+  position: absolute;
+}
+
+.AllOrders {
+  margin-top: 80rpx;
+}
+
+.order {
+  background: #fff;
+  margin-bottom: 20rpx;
+  border-top: 1px solid #efefef;
+  border-bottom: 1px solid #dfdfdf;
+  padding: 10rpx 40rpx 10rpx 40rpx;
+
+}
+.order_num{
+  height: 80rpx;
+  line-height: 80rpx;
+  color: #aaaaaa;
+  border-bottom: 1px solid #cfcfcf;
+  font-size: 30rpx;
+}
+.order_item_num{
+  font-size: 32rpx;
+  color: #999;
+}
+.Order_money{
+  text-align: right;
+  height: 60rpx;
+  line-height: 60rpx;
+  border-bottom: 1px solid #cfcfcf;
+  font-size: 30rpx;
+}
+.Order_Money_text{
+  color:#ff6060;
+}
+.order_item{
+  width: 100%;
+  height: 170rpx;
+  padding: 10rpx 0rpx 10rpx 0rpx;
+   border-bottom: 1px solid #cfcfcf;
+   font-size: 36rpx;
+   display: flex;
+}
+.order_itempic{
+  width: 150rpx;
+  height: 150rpx;
+  float: left;
+  margin: 10rpx;
+}
+.order_item_name{
+ overflow: hidden;
+ width: 100%;
+ height: 90rpx;
+ font-size: 30rpx;
+
+}
+.order_pic{
+  height:170rpx;
+  width:170rpx;
+}
+.order_item_moneys{
+  float: right;
+  text-align: right;
+}
+.Order_action{
+  height: 100rpx;
+  padding: 10rpx;
+}
+.Order_action_btn,.Order_action_btn_red{
+  font-size: 30rpx;
+  width:160rpx;
+  height: 60rpx;
+  margin-top: 5rpx;
+  line-height: 60rpx;
+  border: 1px solid #aaaaaa;
+  color: #aaaaaa;
+  margin-left: 25rpx;
+  border-radius: 60rpx;
+  text-align: center;
+  float: right;
+}
+.Order_action_btn_red{
+  border: 1px solid #ff8080;
+  color: #ff8080;
+}

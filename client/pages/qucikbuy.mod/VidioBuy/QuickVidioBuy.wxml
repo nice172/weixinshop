@@ -1,0 +1,61 @@
+<!--pages/qucikbuy.mod/parambuy/QuickParamBuy.wxml-->
+<view>
+  <view class="Prarm_view">
+   <view class="Prarm_Showitem">
+          <view class="Prarm_alert">请将你的采购需求讲出来:</view>
+        </view>
+  </view>
+  <view class="Prarm_view">
+    <!--用户地址-->
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">数量：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">配送地址：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">详细地址：</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="Prarm_view">
+    <!--用户信息-->
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">联系人:</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+    <view>
+      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_Showitem">
+          <view class="Prarm_name">联系电话:</view>
+          <view class="Prarm_value">{{types[tyeps_index]}}</view>
+        </view>
+      </picker>
+    </view>
+
+  </view>
+
+  <view class="Prarm_view">
+    <button>提交需求</button>
+  </view>
+
+</view>

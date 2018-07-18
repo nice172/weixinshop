@@ -1,0 +1,3 @@
+/* pages/My.mod/Applicationsupplier.wxss */
+@import "/template/Input_Location.wxss";
+@import "/template/TableCell.wxss";

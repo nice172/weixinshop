@@ -1,0 +1,31 @@
+/* pages/qucikbuy.mod/parambuy/QuickParamBuy.wxss */
+page{
+  background: #f6f6f6;
+}
+.Prarm_Showitem {
+  height: 90rpx;
+  width: 750rpx;
+  font-size: 25rpx;
+}
+
+.Prarm_name {
+  float: left;
+  height: 90rpx;
+  line-height: 90rpx;
+  width: 150rpx;
+  padding-left:20rpx; 
+}
+
+.Prarm_value {
+  border-bottom: 1px solid #0066cb;
+  float: left;
+  height: 90rpx;
+  line-height: 90rpx;
+  width: 450rpx;
+  padding-left:20rpx; 
+}
+.Prarm_view{
+  background: #FFF;
+  margin-top: 20rpx;
+  padding-bottom: 30rpx;
+}

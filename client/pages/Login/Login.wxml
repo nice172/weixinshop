@@ -1,0 +1,24 @@
+<!--pages/Login/Login.wxml-->
+<view class='main'>
+  <view class='cell'>
+    <view class="cell_title">账号:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" bindinput='editusername' placeholder='手机号/微信号/平台账号' type='text'></input>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">密码:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" bindinput='editpassword' placeholder='请输入密码(6-21位字母数字)' type='password'></input>
+    </view>
+  </view>
+
+</view>
+<button class="RedBtn" bindtap='Login'>登陆</button>
+<view style='height:50rpx;'> </view>
+<navigator url='/pages/Login/Regeister'>
+  <view class='CenterTips'>注册账号</view>
+</navigator>
+<navigator url="/pages/Login/Forget/ForgetPassword">
+  <view class='CenterTips'>忘记密码</view>
+</navigator>

@@ -1,0 +1,21 @@
+<!--pages/purchase/purchase.wxml-->
+<view class="parchase_head">
+  <view class="parchase_head_map">送货地</view>
+  <view class="parchase_head_name">名称</view>
+  <view class="parchase_head_num">数量</view>
+  <view class="parchase_head_detail">详情</view>
+</view>
+<view class="parchase_list">
+  <view class="recom_item" wx:for="{{parchase}}" wx:key="*this">
+    <view class="parchase_head_map">{{item.mem_addr}}</view>
+    <view class="parchase_head_name">{{item.name}}</view>
+    <view class="parchase_head_num">{{item.pur_num}}</view>
+    <view class="parchase_head_detail" bindtap='detail' data-id="{{item.purchase_id}}">详情</view>
+  </view>
+</view>
+<view class="parchase_btns">
+<navigator url="/pages/purchase/AddNewNeed/AddNewNeed" hover-class="navigator-hover">
+<button class="parchase_needbtn" >发布需求</button></navigator>
+<view  class="parchase_uppage">上一页</view>
+<view  class="parchase_downpage">下一页</view>
+</view>

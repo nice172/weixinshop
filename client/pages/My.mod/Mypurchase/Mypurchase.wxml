@@ -1,0 +1,20 @@
+<!--pages/My.mod/Mypurchase/Mypurchase.wxml-->
+<view class="items_view">
+  <block wx:for="{{purchases}}" wx:key="*this">
+    <view class="item_view">
+      <view class="item_name">{{item.name}}</view>
+      <view class="item_detail">  
+      <view>品牌:{{item.brand}}</view>
+       <view>型号:{{item.cate}}</view>
+        <view>数量:{{item.pur_num}}</view>
+      </view>
+      <view class="item_status">
+        <view class="item_statu">状态:{{item.status == 0?'隐藏':'显示'}}，{{item.verify_status == 0?'待审核':item.verify_status == 1?'审核通过':'审核未通过'}}</view>
+      </view>
+      <view class="item_actions">
+        <view class="item_action_btn_red">删除</view>
+        <view class="item_action_btn">修改</view>
+      </view>
+    </view>
+  </block>
+</view>

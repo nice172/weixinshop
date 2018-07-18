@@ -1,0 +1,77 @@
+<!--pages/item/item.wxml-->
+<view>
+  <view class="head_image_view">
+    <!--滚动展示图片-->
+    <view wx:if="{{imgs != null}}">
+      <swiper>
+        <block wx:for="{{imgs}}" wx:key="*this">
+          <swiper-item>
+            <image class="head_img" src="{{item}}"></image>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+    <view wx:else>
+      <image class="head_img" src="{{loadimg}}"></image>
+    </view>
+  </view>
+  <view>
+    <!--标题头-->
+    <view class="Thead_title">{{title}}</view>
+    <view class="Thead_price">￥ {{price}}</view>
+  </view>
+  <view class="Param">
+    <!--商品参数-->
+    <view class="Param_item" wx:for="{{prarm}}" wx:for-index="name" wx:key="*this">
+      <view class="Param_item_name">{{name}}</view>
+      <view class="Param_item_value">{{item}}</view>
+    </view>
+    <view class='clear'></view>
+  </view>
+  <view>
+    <!--选项卡-->
+    <view class="tabs_view">
+      <view bindtap='TabsChangeD' class="tabs_item {{isDetail}}"> 商品详情</view>
+      <view bindtap='TabsChangeB' class="tabs_item {{isBuyRecord}}">订购记录</view>
+      <view class="clear"></view>
+    </view>
+    <swiper bindchange="setTabsChange" current="{{current}}">
+      <swiper-item>
+        <!--商品详情-->
+        <text style='text-align:center;color:#999999'>暂无商品详情</text>
+      </swiper-item>
+      <swiper-item>
+        <!--订购记录-->
+        <text style='text-align:center;color:#999999'>暂无订购记录</text>
+      </swiper-item>
+    </swiper>
+  </view>
+  <view class='ActBtn_view'>
+    <!--底部操作栏-->
+    <view class="ActBtn_Help" style="position:relative;">
+      <view>
+         <contact-button type="default-light" session-from="weapp" style="opacity:0;position:absolute;width:100rpx;left:0px;top:0px;height:100rpx;"></contact-button> 
+        <image class="ActBtn_icon" src="/images/service.png"></image>
+      </view>
+      <view>客服</view>
+    </view>
+
+    <view class="ActBtn_Shop">
+      <view>
+        <image bindtap="home" class="ActBtn_icon" src="/images/store.png"></image>
+      </view>
+      <view>店铺</view>
+    </view>
+
+    <navigator url='/pages/My.mod/ShoppingCart/ShoppingCart'>
+      <view class="ActBtn_MyCart">
+        <view>
+          <image class="ActBtn_icon" src="/images/a_cart.png"></image>
+        </view>
+        <view>购物车</view>
+      </view>
+    </navigator>
+    <view class="ActBtn_AddBuyCart" bindtap='add_to_cart'>加入购物车</view>
+    <view class="ActBtn_NowBuy" bindtap='Buy_to_cart'>立刻购买</view>
+  </view>
+</view>

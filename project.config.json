@@ -1,0 +1,14 @@
+{
+	"miniprogramRoot": "./client",
+	"qcloudRoot": "./server",
+	"setting": {
+		"urlCheck": false,
+		"es6": true,
+		"postcss": true,
+		"minified": true,
+		"newFeature": true
+	},
+	"appid": "wx65b59c454554c0f9",
+	"projectname": "wx_shop",
+	"condition": {}
+}

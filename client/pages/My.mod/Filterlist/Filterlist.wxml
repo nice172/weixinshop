@@ -1,0 +1,30 @@
+<!--pages/Filterlist/Filterlist.wxml-->
+<view class="Head_view">
+  <scroll-view class="Head_type" scroll-x="true">
+    <view class="Head_AllClass">
+      <view bindtap='ChangeClass' data-class='0' class="Head_class {{choseclass==0?'Head_classon':null}}">白名单({{Lvonenum}})</view>
+      <view bindtap='ChangeClass' data-class='1' class="Head_class {{choseclass==1?'Head_classon':null}}">黑名单({{Lvtwonum}})</view>
+    </view>
+    <view class="Head_Scroll">
+      <view class="Head_Scrollclass" style='left:{{choseclass*375+10}}rpx'></view>
+    </view>
+  </scroll-view>
+</view>
+<view class="AllReferrals">
+  <view class="TipsView">{{choseclass==0?"优先推荐白名单发布的产品!":"黑名单中的产品将不会出现在你的推荐列表!"}}</view>
+  <block wx:for="{{list}}" wx:key="*this">
+    <view class="ref_view">
+      <view class="ref_center">
+        <view class="ref_name">{{item.name}}</view>
+      </view>
+      <view>
+        <view class="ref_del"><image class="act_Del_image" src='/images/del.png'></image></view>
+      </view>
+    </view>
+
+  </block>
+
+</view>
+<view class='addFilt'>
+  添加{{choseclass==0?"白":"黑"}}名单
+</view>

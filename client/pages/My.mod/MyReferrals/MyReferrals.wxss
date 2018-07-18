@@ -1,0 +1,91 @@
+/* pages/My.mod/MyReferrals/MyReferrals.wxss */
+
+page {
+  background: #f6f6f6;
+}
+
+.Head_view {
+  position: fixed;
+  height: 73rpx;
+  left: 0px;
+  top: 0px;
+}
+
+.Head_type {
+  background: #fff;
+  height: 73rpx;
+  width: 750rpx;
+}
+
+.Head_AllClass {
+  display: flex;
+  width: 840rpx;
+}
+
+.Head_Scroll {
+  width: 840rpx;
+  position: relative;
+}
+
+.Head_class {
+  font-size: 30rpx;
+  width: 355rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+  margin: 15rpx 10rpx 15rpx 10rpx;
+  color: #999;
+}
+
+.Head_classon {
+  color: orange;
+}
+
+.Head_Scrollclass {
+  background: orange;
+  height: 3rpx;
+  width: 355rpx;
+  transition: left 500ms;
+  position: absolute;
+}
+
+.ref_view {
+  display: flex;
+  padding: 20rpx;
+  border-bottom: 1px solid #f6f6f6;
+  background: #fff;
+  height: 100rpx;
+}
+
+.AllReferrals {
+  margin-top: 80rpx;
+}
+
+.ref_icon {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 8rpx;
+}
+.ref_center{
+  border-right:1px solid #f6f6f6;  
+}
+.ref_name, .ref_time {
+  margin-left: 20rpx;
+  font-size: 34rpx;
+  width: 420rpx;
+  overflow: hidden;
+}
+
+.ref_time {
+  color: #bbb;
+  font-size: 30rpx;
+}
+.ref_monetray,.ref_order{
+  width: 170rpx;
+  text-align: right;
+  font-size:28rpx;
+  color: #aaa;
+  height: 50rpx;
+  line-height: 50rpx;
+  overflow: hidden;
+}
