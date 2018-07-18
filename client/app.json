@@ -4,6 +4,7 @@
     "pages/index/index",
     "pages/addCgi/addCgi",
     "pages/purchase/purchase",
+    "pages/editpurchase/edit",
     "pages/quickbuy/qucikbuy",
     "pages/my/my",
     "pages/item/item",

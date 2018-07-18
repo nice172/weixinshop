@@ -96,10 +96,15 @@ Page({
     var _this = this;
     http.send({
       url: app.config.ApiUrl+'?act=updateuser',
+      method: 'POST',
       data:{
-        user_name: this.data.user_name,
+        user_name: this.data.username,
         mobile_phone: this.data.mobile_phone,
-        wxuser: this.data.wxuser
+        wxuser: this.data.wxuser,
+        birthday: this.data.userinfo.birthday,
+        province: this.data.region[0],
+        city: this.data.region[1],
+        area: this.data.region[2]
       },
       success: function(response){
           wx.hideLoading();
@@ -139,7 +144,9 @@ Page({
     });
   },
   bindRegionChange: function(e){
-    console.log(e);
+    this.setData({
+      region: e.detail.value
+    });
   },
   /**
    * 生命周期函数--监听页面初次渲染完成

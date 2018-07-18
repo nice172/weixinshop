@@ -1,0 +1,57 @@
+/* pages/purchase/AddNewNeed/AddNewNeed.wxss */
+
+page {
+  background: #f6f6f6;
+}
+
+.main {
+  background: #fff;
+  margin-bottom: 20rpx;
+}
+
+.cell {
+  display: flex;
+  padding: 10rpx 20rpx 10rpx 20rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  width: 710rpx;
+}
+
+.cell_title {
+  margin-left: 20rpx;
+  width: 130rpx;
+  font-size: 30rpx;
+  
+}
+
+.cell_body {
+  width: 550rpx;
+}
+@import "/template/Input_Location.wxss";
+.cell_body_title {
+  height: 60rpx;
+  margin: 10rpx;
+  width: 100%;
+  border: 1px solid #0066cb;
+}
+.cell_textarea{
+    width: 700rpx;
+    margin: 0rpx 25rpx 0rpx 25rpx;
+    height: 100%;
+    font-size: 28rpx;
+    line-height: 30rpx;
+}
+
+.cell_picker{
+  margin: 10rpx;
+  border: 1px solid #0066cb;
+  height: 60rpx;
+  width: 100%;
+  line-height: 60rpx;
+}
+.Prarm_value{
+  margin-left: 10rpx;
+}
+.SumbitBtn{
+width: 100%;
+}

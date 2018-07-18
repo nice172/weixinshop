@@ -1,0 +1,67 @@
+<!--pages/purchase/AddNewNeed/AddNewNeed.wxml-->
+
+<view class='main'>
+  <view class='cell'>
+    <view class="cell_title">标题:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" type='text' value='{{name}}' data-typename="name" bindinput='onchange'></input>
+    </view>
+  </view>
+</view>
+<view class='main'>
+  <view class='cell'>
+    <view class="cell_title">数量:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" type='number' value='{{pur_num}}'  data-typename="pur_num" bindinput='onchange'></input>
+    </view>
+  </view>
+
+  <view class='cell'>
+    <view class="cell_title">品牌:</view>
+    <view class="cell_body">
+      <picker class="cell_picker" bindchange='onchange' data-typename='tyeps_index'  range-key="brand_name" value="{{tyeps_index}}" range="{{types}}">
+        <view class="Prarm_value">{{types[tyeps_index].brand_name}}</view>
+      </picker>
+    </view>
+  </view>
+  <view class='cell'>
+    <view class="cell_title">型号:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" type='text' value='{{cate}}' data-typename="cate" bindinput='onchange'></input>
+    </view>
+  </view>
+   <view class='cell'>
+    <view class="cell_title">配送地:</view>
+    <view class="cell_body">
+              <view class="Input_Location">
+        <picker class="Input_Location_picker" mode="multiSelector" range="{{ShowCitys}}" range-key="region_name" bindchange="bindRegionChangeAddress" bindcolumnchange="bindcolumnchange" value="{{options}}">
+          <view class="Input_Location_picker_view">
+            <view class="Input_Location_item">{{CityText[0]}}</view>
+            <view class="Input_Location_item">{{CityText[1]}}</view>
+            <view class="Input_Location_item">{{CityText[2]}}</view>
+          </view>
+        </picker>
+      </view>
+    </view>
+  </view>
+   <view class='cell'>
+    <view class="cell_title">详细地址</view>
+    <view class="cell_body">
+      <input class="cell_body_title" type='text' value='{{address}}' data-typename="address" bindinput='onchange'></input>
+    </view>
+  </view>
+</view>
+
+<view class='main'>
+  <view class='cell'>
+    <view class="cell_title">详细内容</view>
+  </view>
+   <view class='cell' style='height:300rpx;'>
+    <textarea class="cell_textarea"  data-typename="content" bindinput='onchange'>{{content}}</textarea>
+  </view>
+</view>
+  <view class="main">
+   <view class='cell'>
+    <button class="SumbitBtn" bindtap='addNewNeed'>提交修改</button>
+    </view>
+  </view>
