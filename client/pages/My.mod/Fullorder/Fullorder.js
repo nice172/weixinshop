@@ -32,7 +32,34 @@ Page({
     console.log(classtype)
     this.setData({
       choseclass: classtype
-    })
+    });
+    var typetext = 'all';
+    if(classtype == 1){
+      typetext = 'not_pay';
+    }else if(classtype == 2){
+      typetext = 'shipping_status';
+    }else if(classtype == 3){
+      typetext = 'order_status';
+    }else if(classtype == 4){
+      typetext = 'order_done';
+    }else if(classtype == 5){
+      typetext = 'refund_goods';
+    }
+    var app = getApp()
+    var page = this;
+    //获取热门推荐
+    http.send({
+      url: app.config.ApiUrl + '?act=order_list&' + typetext+'=1', //仅为示例，并非真实的接口地址
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success: function (res) {
+        console.log(res);
+        page.setData({
+          Orders: res.data
+        })
+      }
+    });
   },
   /**
    * 生命周期函数--监听页面初次渲染完成

@@ -201,10 +201,10 @@ if ($act == 'mingdansend'){
 
 if ($act == 'paymentapi'){
     
-    require_once "./wxpay/lib/WxPay.Api.php";
-    require_once "./wxpay/WxPay.JsApiPay.php";
-    require_once "./wxpay/WxPay.Config.php";
-    require_once './wxpay/log.php';
+    require_once "wxpay/lib/WxPay.Api.php";
+    require_once "wxpay/WxPay.JsApiPay.php";
+    require_once "wxpay/WxPay.Config.php";
+    require_once 'wxpay/log.php';
     
     //初始化日志
     $logHandler= new CLogFileHandler("./wxpay/logs/".date('Y-m-d').'.log');
@@ -848,7 +848,9 @@ else if ($act == 'act_register') {
             'is_default' => 0
         ), 'UPDATE', 'user_id = ' . $address['user_id']);
     }
-    
+    $db->autoExecute($ecs->table('users'), array(
+    		'address_id' => $address['address_id']
+    ), 'UPDATE', 'user_id = ' . $address['user_id']);
     if (update_address($address)) {
         show_json_message($_LANG['edit_address_success'], $_LANG['address_list_lnk'], 'user.php?act=address_list');
     }
@@ -1523,16 +1525,38 @@ function wx_get_package_goods($package_id)
  * @param   int         $start          列表起始位置
  * @return  array       $order_list     订单列表
  */
-function wx_get_user_orders($user_id, $num = 10, $start = 0)
-{
+function wx_get_user_orders($user_id, $num = 30, $start = 0){
+	
+	$where = '';
+	//未发货
+	if (isset($_GET['shipping_status'])){
+		$where = 'and shipping_status='.SS_UNSHIPPED;
+	}
+	//未支付
+	if (isset($_GET['not_pay'])){
+		$where = 'and pay_status='.PS_UNPAYED;
+	}
+	//已发货
+	if (isset($_GET['order_status'])){
+		$where = 'and shipping_status='.SS_SHIPPED.' and order_status='.OS_SPLITED;
+	}
+	//已完成
+	if (isset($_GET['order_done'])){
+		$where = 'and shipping_status='.SS_RECEIVED.' and order_status='.OS_SPLITED;
+	}
+	//退货
+	if (isset($_GET['refund_goods'])){
+		$where = 'and shipping_status='.SS_UNSHIPPED.' and order_status='.OS_RETURNED;
+	}
+	
+	
     /* 取得订单列表 */
     $arr    = array();
-    
     $sql = "SELECT order_id, order_sn, order_status, shipping_status, pay_status, add_time, " .
         "order_amount AS total_fee ".
         // "(goods_amount + shipping_fee + insure_fee + pay_fee + pack_fee + card_fee + tax - discount) AS total_fee ".
     " FROM " .$GLOBALS['ecs']->table('order_info') .
-    " WHERE user_id = '$user_id' ORDER BY add_time DESC";
+    " WHERE user_id = '$user_id' {$where} ORDER BY add_time DESC";
     $res = $GLOBALS['db']->SelectLimit($sql, $num, $start);
     
     while ($row = $GLOBALS['db']->fetchRow($res))
