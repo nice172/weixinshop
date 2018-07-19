@@ -10,7 +10,9 @@ Page({
     status:{
       0:"待付款"
     },
-    Orders: []
+    Orders: [],
+    is_show: false,
+    show: []
   },
 
   /**
@@ -28,6 +30,16 @@ Page({
     })
   },
   ChangeClass: function (e) {
+    wx.showLoading({
+      title: '加载中...',
+      mask: true,
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
+    });
+    setTimeout(function(){
+      wx.hideLoading();
+    },30000);
     var classtype = e.target.dataset.class
     console.log(classtype)
     this.setData({
@@ -54,10 +66,17 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success: function (res) {
-        console.log(res);
+        wx.hideLoading();
+        var show = [];
+        for(var i in res.data){
+            show.push({
+              'is_show': true
+            });
+        }
         page.setData({
+          show: show,
           Orders: res.data
-        })
+        });
       }
     });
   },
@@ -65,7 +84,7 @@ Page({
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {
-
+      
   },
 
   /**
@@ -110,6 +129,16 @@ Page({
 
   },
   refresh_list: function () {
+    wx.showLoading({
+      title: '加载中...',
+      mask: true,
+      success: function (res) { },
+      fail: function (res) { },
+      complete: function (res) { },
+    });
+    setTimeout(function () {
+      wx.hideLoading();
+    }, 30000);
     var app = getApp()
     var page = this;
     //获取热门推荐
@@ -122,11 +151,206 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success: function (res) {
-        console.log(res)
+        wx.hideLoading();
+        if(res.data.code == 20001){
+          wx.showToast({
+            title: '请先登录用户',
+            icon: 'none',
+            mask: true,
+            success: function(res) {},
+            fail: function(res) {},
+            complete: function(res) {},
+          });
+          setTimeout(function(){
+            wx.navigateTo({
+              url: '../../Login/Login',
+              success: function(res) {},
+              fail: function(res) {},
+              complete: function(res) {},
+            });
+          },1500);
+          return;
+        }
+        var show = [];
+        for (var i in res.data) {
+          show.push({
+            'is_show': true
+          });
+        };
         page.setData({
+          show: show,
           Orders:res.data
         })
       }
     })
+  },
+
+  payment: function(event){
+      wx.showToast({
+        title: '调试中',
+        icon: 'none',
+        mask: true,
+        success: function(res) {},
+        fail: function(res) {},
+        complete: function(res) {},
+      });
+
+      var order_id = event.target.dataset.order_id;
+      console.log(order_id);
+
+  },
+
+  cancel: function (event){
+      var app = getApp();
+      var _this = this;
+      var order_id = event.target.dataset.order_id;
+      var index = event.target.dataset.index;
+      wx.showModal({
+        title: '提示',
+        content: '确认取消吗?',
+        success: function (res) {
+          if (res.confirm) {
+            wx.showLoading({
+              title: '取消中...',
+              mask: true,
+              success: function(res) {},
+              fail: function(res) {},
+              complete: function(res) {},
+            });
+            setTimeout(() => {wx.hideLoading()},30000);
+            http.send({
+
+              url: app.config.ApiUrl + '?act=cancelorder&order_id=' + order_id,
+              success: function(response){
+                
+                wx.hideLoading();
+                wx.showToast({
+                  title: response.data.msg,
+                  icon: 'none',
+                  mask: true,
+                  success: function(res) {},
+                  fail: function(res) {},
+                  complete: function(res) {},
+                });
+                if(response.data.code == 1){
+                  var show = _this.data.show;
+                  show[index]['is_show'] = false;
+                  _this.setData({
+                    show: show
+                  });
+                }
+
+              }
+
+            });
+
+          } else if (res.cancel) {
+            console.log('用户点击取消')
+          }
+        }
+      })
+  },
+
+  confirm: function (event){
+    var app = getApp();
+    var _this = this;
+    var order_id = event.target.dataset.order_id;
+    var index = event.target.dataset.index;
+    wx.showModal({
+      title: '提示',
+      content: '确认收到货物了吗?',
+      success: function (res) {
+        if (res.confirm) {
+          wx.showLoading({
+            title: '确认中...',
+            mask: true,
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
+          });
+          setTimeout(() => { wx.hideLoading() }, 30000);
+          http.send({
+
+            url: app.config.ApiUrl + '?act=confirm&order_id=' + order_id,
+            success: function (response) {
+
+              wx.hideLoading();
+              wx.showToast({
+                title: response.data.msg,
+                icon: 'none',
+                mask: true,
+                success: function (res) { },
+                fail: function (res) { },
+                complete: function (res) { },
+              });
+              if (response.data.code == 1) {
+                var show = _this.data.show;
+                show[index]['is_show'] = false;
+                _this.setData({
+                  show: show
+                });
+              }
+
+            }
+
+          });
+
+        } else if (res.cancel) {
+          console.log('用户点击取消')
+        }
+      }
+    })
+  },
+
+  refund: function (event){
+    var app = getApp();
+    var _this = this;
+    var order_id = event.target.dataset.order_id;
+    var index = event.target.dataset.index;
+    wx.showModal({
+      title: '提示',
+      content: '确认退货吗?',
+      success: function (res) {
+        if (res.confirm) {
+          wx.showLoading({
+            title: '退货中...',
+            mask: true,
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
+          });
+          setTimeout(() => { wx.hideLoading() }, 30000);
+          http.send({
+
+            url: app.config.ApiUrl + '?act=refundgoods&order_id=' + order_id,
+            success: function (response) {
+
+              wx.hideLoading();
+              wx.showToast({
+                title: response.data.msg,
+                icon: 'none',
+                mask: true,
+                success: function (res) { },
+                fail: function (res) { },
+                complete: function (res) { },
+              });
+              if (response.data.code == 1) {
+                var show = _this.data.show;
+                show[index]['is_show'] = false;
+                _this.setData({
+                  show: show
+                });
+              }
+
+            }
+
+          });
+
+        } else if (res.cancel) {
+          console.log('用户点击取消')
+        }
+      }
+    })
   }
+
 })

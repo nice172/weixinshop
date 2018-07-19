@@ -1,7 +1,7 @@
 <!--pages/shop/shop.wxml-->
 <view class="head_view">
   <!--库存查询 店铺头图片-->
-  <image class="headimg" src="{{head_img_url}}"></image>
+  <image class="headimg" bindtap='test' src="{{head_img_url}}"></image>
 </view>
 <view class="hotip_view">
   <!--热点-->

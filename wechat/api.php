@@ -9,6 +9,7 @@ include_once ('includes/cls_json.php');
 if ((DEBUG_MODE & 2) != 2) {
     $smarty->caching = true;
 }
+define('CERT_PATH', __DIR__.'/wxpay/cert');
 /* 载入语言文件 */
 require_once (ROOT_PATH . 'languages/' . $_CFG['lang'] . '/user.php');
 require_once (ROOT_PATH . 'languages/' . $_CFG['lang'] . '/shopping_flow.php');
@@ -41,6 +42,7 @@ $not_login_arr = array(
     'detail',
     'search',
     'quickcate',
+    'create'
 );
 
 /* 显示页面的action列表 */
@@ -67,7 +69,9 @@ $ui_arr = array(
     'paymentapi',
     'mingdansend',
     'mingdanlist',
-    'deletemingdan'
+    'deletemingdan',
+    'address_list',
+    'confirm','cancelorder','refundgoods'
 );
 
 /* 未登录处理 */
@@ -81,7 +85,8 @@ if (empty($_SESSION['user_id'])) {
             exit();
         } else {
             // 未登录提交数据。非正常途径提交数据！
-            die(array(
+            ajaxReturn(array(
+                'code' => 0,
                 "msg" => "非法操作!"
             ));
         }
@@ -90,6 +95,30 @@ if (empty($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+if ($act == 'create'){
+    
+//     $db->query("alter table ccl_users add wxuser varchar(255) not null default '' comment '微信号'");
+//     $db->query("alter table ccl_users add province varchar(255) not null default '' comment '省'");
+//     $db->query("alter table ccl_users add city varchar(255) not null default '' comment '市'");
+//     $db->query("alter table ccl_users add area varchar(255) not null default '' comment '区'");
+//     $db->query("CREATE TABLE `ccl_user_black` (
+//   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+//   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
+//   `brand_id` int(10) unsigned NOT NULL DEFAULT '0',
+//   `brand_name` varchar(255) NOT NULL DEFAULT '',
+//   `type` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0白名单，1黑名单',
+//   PRIMARY KEY (`id`)
+// ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8");
+
+    //print_r($db->fetchRow($db->query("show create table ccl_order_quick")));
+    
+    
+    //$db->query("alter table ccl_order_quick add audio varchar(255) not null default '' comment '录音文件'");
+    return;
+}
+
+
+
 if ($act == 'search'){
     
     if (!isset($_GET['id']) || empty($_GET['id'])) ajaxReturn(['code' => 0,'msg' => '搜索商品失败']);
@@ -97,6 +126,60 @@ if ($act == 'search'){
     include 'list.php';
     
     return;
+}
+
+if ($act == 'confirm'){
+    $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+    if ($order_id <= 0) ajaxReturn(['code' => 0,'msg' => '确认收货失败']);
+    $db->autoExecute($ecs->table('order_info'), [
+        'order_status' => 5,'shipping_status' => 2,'pay_status' => 2
+    ],'UPDATE', "user_id='{$user_id}' and order_id='{$order_id}'");
+    if ($db->affected_rows()){
+        $db->autoExecute($ecs->table('order_action'), [
+            'order_id' => $order_id,'action_user' => '买家',
+            'order_status' => 5,'shipping_status' => 2,
+            'pay_status' => 2,'action_note' => '用户确认',
+            'log_time' => time()
+        ]);
+        ajaxReturn(['code' => 1,'msg' =>'确认收货成功']); 
+    }
+    ajaxReturn(['code' => 0,'msg' => '确认收货失败']);
+}
+
+if ($act == 'cancelorder'){
+    $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+    if ($order_id <= 0) ajaxReturn(['code' => 0,'msg' => '取消订单失败']);
+    $db->autoExecute($ecs->table('order_info'), [
+        'order_status' => 2,'shipping_status' => 0,'pay_status' => 0
+    ],'UPDATE', "user_id='{$user_id}' and order_id='{$order_id}'");
+    if ($db->affected_rows()){
+        $db->autoExecute($ecs->table('order_action'), [
+            'order_id' => $order_id,'action_user' => '买家',
+            'order_status' => 2,'shipping_status' => 0,
+            'pay_status' => 0,'action_note' => '用户取消',
+            'log_time' => time()
+        ]);
+        ajaxReturn(['code' => 1,'msg' =>'取消订单成功']);
+    }
+    ajaxReturn(['code' => 0,'msg' => '取消订单失败']);
+}
+
+if ($act == 'refundgoods'){
+    $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+    if ($order_id <= 0) ajaxReturn(['code' => 0,'msg' => '退货操作失败']);
+    $db->autoExecute($ecs->table('order_info'), [
+        'order_status' => 4,'shipping_status' => 0,'pay_status' => 0
+    ],'UPDATE', "user_id='{$user_id}' and order_id='{$order_id}'");
+    if ($db->affected_rows()){
+        $db->autoExecute($ecs->table('order_action'), [
+            'order_id' => $order_id,'action_user' => '买家',
+            'order_status' => 4,'shipping_status' => 0,
+            'pay_status' => 0,'action_note' => '用户退货',
+            'log_time' => time()
+        ]);
+        ajaxReturn(['code' => 1,'msg' =>'退货操作成功']);
+    }
+    ajaxReturn(['code' => 0,'msg' => '退货操作失败']);
 }
 
 if ($act == 'purchase_delete'){
@@ -287,6 +370,7 @@ if ($act == 'userinfo'){
 
 if ($act == 'quick'){
     $data = post();
+    $type = isset($_GET['type']) ? trim($_GET['type']) : '';
     if (empty($data) || !is_array($data) || 
         empty($data['phone']) || !$data['num'] || empty($data['username'])){
         ajaxReturn(['code' => 0,'msg' => '提交失败']);
@@ -300,7 +384,7 @@ if ($act == 'quick'){
     $province = $province['region_name']?$province['region_name']:'';
     $city = $city['region_name']?$city['region_name']:'';
     $district = $district['region_name']?$district['region_name']:'';
-    if($db->autoExecute($ecs->table('order_quick'), [
+    $insertData = [
         'user_id' => $user_id,
         'cate_name' => '',
         'brand_name' => '',
@@ -308,10 +392,16 @@ if ($act == 'quick'){
         'realname' => $data['username'],
         'mobile' => $data['phone'],
         'address' => $province.$city.$district.$data['address'],
-        'images' => json_encode($data['images']),
         'num' => $data['num'],
         'ctime' => date("Y-m-d H:i:s")
-    ])){
+    ];
+    if (empty($type)) {
+        $insertData['images'] = json_encode($data['images']);
+    }
+    if ($type == 'audio') {
+        $insertData['audio'] = $data['audiofile'];
+    }
+    if($db->autoExecute($ecs->table('order_quick'), $insertData)){
         ajaxReturn(['msg' => '提交成功','code' => 1]);
     }else{
         ajaxReturn(['msg' => '提交失败，请重试','code' => 0]);
@@ -364,6 +454,8 @@ if ($act == 'upload'){
         $upload->savePath = 'company_img/';
     }elseif ($type == 'quick'){
         $upload->savePath = 'images/';
+    }elseif ($type == 'audio'){
+        $upload->savePath = 'audio/';
     }
     $info = $upload->upload();
     if (!$info){
@@ -1413,12 +1505,16 @@ function wx_order_goods($order_id)
     
     $res = $GLOBALS['db']->query($sql);
     
+    $http = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].'/';
+    
     while ($row = $GLOBALS['db']->fetchRow($res))
     {
-        if ($row['extension_code'] == 'package_buy')
-        {
+        if ($row['extension_code'] == 'package_buy'){
             $row['package_goods_list'] = wx_get_package_goods($row['goods_id']);
         }
+        
+        $imgRow = $GLOBALS['db']->getRow("select * from {$GLOBALS['ecs']->table('goods_gallery')} where goods_id={$row['goods_id']}");
+        $row['img'] = $imgRow['thumb_url'] ? $http.$imgRow['thumb_url'] : '';
         $goods_list[] = $row;
     }
     
@@ -1525,31 +1621,30 @@ function wx_get_package_goods($package_id)
  * @param   int         $start          列表起始位置
  * @return  array       $order_list     订单列表
  */
-function wx_get_user_orders($user_id, $num = 30, $start = 0){
+function wx_get_user_orders($user_id, $num = 100, $start = 0){
 	
 	$where = '';
 	//未发货
 	if (isset($_GET['shipping_status'])){
-		$where = 'and shipping_status='.SS_UNSHIPPED;
+		$where = 'and pay_status=2 and order_status=1 and shipping_status=0';
 	}
 	//未支付
 	if (isset($_GET['not_pay'])){
-		$where = 'and pay_status='.PS_UNPAYED;
+		$where = 'and order_status=0 and shipping_status=0 and pay_status=0';
 	}
 	//已发货
 	if (isset($_GET['order_status'])){
-		$where = 'and shipping_status='.SS_SHIPPED.' and order_status='.OS_SPLITED;
+		$where = 'and pay_status=2 and shipping_status=1 and order_status=5';
 	}
 	//已完成
 	if (isset($_GET['order_done'])){
-		$where = 'and shipping_status='.SS_RECEIVED.' and order_status='.OS_SPLITED;
+		$where = 'and pay_status=2 and shipping_status=2 and order_status=5';
 	}
 	//退货
 	if (isset($_GET['refund_goods'])){
-		$where = 'and shipping_status='.SS_UNSHIPPED.' and order_status='.OS_RETURNED;
+		$where = 'and shipping_status=0 and order_status=4 and pay_status=0';
 	}
-	
-	
+
     /* 取得订单列表 */
     $arr    = array();
     $sql = "SELECT order_id, order_sn, order_status, shipping_status, pay_status, add_time, " .
@@ -1557,20 +1652,22 @@ function wx_get_user_orders($user_id, $num = 30, $start = 0){
         // "(goods_amount + shipping_fee + insure_fee + pay_fee + pack_fee + card_fee + tax - discount) AS total_fee ".
     " FROM " .$GLOBALS['ecs']->table('order_info') .
     " WHERE user_id = '$user_id' {$where} ORDER BY add_time DESC";
-    $res = $GLOBALS['db']->SelectLimit($sql, $num, $start);
     
+    $res = $GLOBALS['db']->SelectLimit($sql, $num, $start);
+
     while ($row = $GLOBALS['db']->fetchRow($res))
     {
         
-        $row['shipping_status'] = ($row['shipping_status'] == SS_SHIPPED_ING) ? SS_PREPARING : $row['shipping_status'];
+        //$row['shipping_status'] = ($row['shipping_status'] == SS_SHIPPED_ING) ? SS_PREPARING : $row['shipping_status'];
         //$row['order_status'] = $GLOBALS['_LANG']['os'][$row['order_status']] . ',' . $GLOBALS['_LANG']['ps'][$row['pay_status']] . ',' . $GLOBALS['_LANG']['ss'][$row['shipping_status']];
         
         $arr[] = array('order_id'       => $row['order_id'],
             'order_sn'       => $row['order_sn'],
             'order_time'     => local_date($GLOBALS['_CFG']['time_format'], $row['add_time']),
             'order_status'   => $row['order_status'],
-            'status'   =>  $row['shipping_status'] ,
-            // 'total_fee'      => price_format($row['total_fee'], false),
+            'shipping_status'   =>  $row['shipping_status'],
+            'pay_status' => $row['pay_status'],
+            //'total_fee'      => price_format($row['total_fee'], false),
             'total_fee'      => $row['total_fee'],
             'handler'        => $row['handler']);
     }

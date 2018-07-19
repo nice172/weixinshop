@@ -1,3 +1,6 @@
+@import "/template/Input_Location.wxss";
+@import "/template/TableCell.wxss";
+@import "/lib/weui.wxss";
 page{
   background: #f6f6f6;
 }
@@ -6,6 +9,7 @@ page{
   width: 750rpx;
   font-size: 25rpx;
 }
+
 .Prarm_alert{
   height: 90rpx;
   line-height: 90rpx;
@@ -26,9 +30,12 @@ page{
   line-height: 90rpx;
   width: 450rpx;
   padding-left:20rpx; 
+  background: #FFF;
 }
-.Prarm_view{
+
+.params{
   background: #FFF;
   margin-top: 20rpx;
-  padding-bottom: 30rpx;
+  /* padding-bottom: 30rpx; */
 }
+

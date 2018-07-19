@@ -4,14 +4,14 @@
 
 // 此处主机域名修改成腾讯云解决方案分配的域名
 var host = 'http://123456.qcloud.la';
-// var ApiUrl = "https://www.ccl711.com/wechat/api.php";
-var ApiUrl = "http://www.testwxshop.com/wechat/api.php";
+var ApiUrl = "https://www.ccl711.com/wechat/api.php";
+// var ApiUrl = "http://www.testwxshop.com/wechat/api.php";
 var config = {
   ApiUrl: ApiUrl,
-  // Url:"https://www.ccl711.com/",
-  // ImageRoot:"https://www.ccl711.com/",
-  Url: 'http://www.testwxshop.com/',
-  ImageRoot: "http://www.testwxshop.com/",
+  Url:"https://www.ccl711.com/",
+  ImageRoot:"https://www.ccl711.com/",
+  // Url: 'http://www.testwxshop.com/',
+  // ImageRoot: "http://www.testwxshop.com/",
   api: {
 
   },

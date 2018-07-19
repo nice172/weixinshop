@@ -45,7 +45,25 @@ Page({
       },
       success: function(res) {
         console.log(res)
-
+        if (res.data.code == 20001) {
+          wx.showToast({
+            title: '请先登录用户',
+            icon: 'none',
+            mask: true,
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
+          });
+          setTimeout(function () {
+            wx.navigateTo({
+              url: '../../Login/Login',
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            });
+          }, 1500);
+          return;
+        }
         for (var key in res.data.consignee_list) {
           var consignee = res.data.consignee_list[key];
           var address = city.findName(consignee.province, consignee.city, consignee.district)

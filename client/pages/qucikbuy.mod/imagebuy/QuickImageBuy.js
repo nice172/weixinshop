@@ -21,12 +21,59 @@ Page({
     images: []
   },
 
+  _previewImage: function(e){
+    var index = e.currentTarget.dataset.index;
+    var current = this.data.files[index]['ZoomUrl'];
+    var urls = [];
+    for(var i in this.data.files){
+      urls.push(this.data.files[i]['ZoomUrl']);
+    }
+      wx.previewImage({
+        current: current,
+        urls: urls,
+      });
+  },
+
+  _deleteImage: function(e){
+      var index = e.currentTarget.dataset.index;
+      var _this = this;
+      var files = this.data.files;
+      wx.showModal({
+        title: '提示',
+        content: '确认删除吗?',
+        success: function (res) {
+          if (res.confirm) {
+              var images = [];
+              for(var i in files){
+                if(index != i){
+                  images.push(files[i]);
+                }
+              }
+              _this.setData({
+                files: images
+              });
+          }else{
+
+          }
+        }
+      });
+  },
+
   bindRegionChange: function (e) {
     var cityvalue = [];
     var options = [];
     var province = null;
     var cityid = null;
     var district = null;
+    if (e.detail.value[0] == null) {
+      e.detail.value[0] = 0;
+    }
+    if (e.detail.value[1] == null){
+      e.detail.value[1] = 0;
+    }
+    if (e.detail.value[2] == null) {
+      e.detail.value[2] = 0;
+    }
     for (var index in e.detail.value) {
       var address_id = 0
       if (this.data.ShowCitys[index] == null ||

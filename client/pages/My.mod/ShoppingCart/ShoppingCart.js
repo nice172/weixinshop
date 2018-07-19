@@ -81,6 +81,14 @@ Page({
                   success: function(response){
                       if(response.data.code == 1){
 
+                      wx.login({
+                        success: function(res) {
+                          
+                        },
+                        fail: function(res) {},
+                        complete: function(res) {},
+                      });
+
                       wx.requestPayment({
                         timeStamp: '',
                         nonceStr: '',

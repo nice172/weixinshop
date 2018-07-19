@@ -1,0 +1,6 @@
+<view>
+
+
+<button bindtap='test'>支付</button>
+
+</view>

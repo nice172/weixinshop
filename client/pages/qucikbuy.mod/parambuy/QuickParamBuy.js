@@ -175,6 +175,9 @@ Page({
     var province = null;
     var cityid = null;
     var district = null;
+    if (e.detail.value[2] == null) {
+      e.detail.value[2] = 0;
+    }
     for (var index in e.detail.value) {
       var address_id = 0
       if (this.data.ShowCitys[index] == null ||

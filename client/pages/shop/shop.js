@@ -25,6 +25,17 @@ Page({
     recom_items: [
     ]
   },
+
+  test: function(){
+    wx.navigateTo({
+      url: '../testpay/index',
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
+    })
+  },
+
+
   OpenItem: function (event) {
     var data = event.currentTarget.dataset;
     wx.navigateTo({

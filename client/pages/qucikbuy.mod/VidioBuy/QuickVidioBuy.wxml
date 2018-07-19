@@ -1,61 +1,93 @@
 <!--pages/qucikbuy.mod/parambuy/QuickParamBuy.wxml-->
 <view>
-  <view class="Prarm_view">
-   <view class="Prarm_Showitem">
-          <view class="Prarm_alert">请将你的采购需求讲出来:</view>
+<!--start-->
+<view>
+
+  <view class="page__bd">
+      <view class="weui-cells" style="margin-top:0px;">
+        <view class="weui-cell">
+          <view class="weui-cell__bd">
+            <view class="weui-uploader">
+              <view class="weui-uploader__hd">
+                <view class="weui-uploader__title">
+                <text style="float:left;">请将你的采购需求讲出来</text>
+                <image bindtap='aud' src="/images/aud.png" style="width:35px;height:35px;float:left;margin-top:-5px;"></image></view>
+              </view>
+              <view class="weui-uploader__bd">
+                <view class="weui-uploader__files" id="uploaderFiles">
+                  <view wx:if="{{tempFilePath!=''}}">
+                  <image src="/images/play.png" bindtap='payaudio' style="width:35px;height:35px;"></image>
+                  <image src="/images/trash.png" bindtap='deleteaudio' style="width:35px;height:35px;margin-left:30px;"></image>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
         </view>
+      </view>
+    </view>
+
+</view>
+<!--end-->
+  
+<view class="params" style="margin-top:10px;">
+
+  <view class='cell'>
+    <view class="cell_title">数量:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" placeholder='请输入数量' bindinput='numInput' type='text'></input>
+    </view>
   </view>
-  <view class="Prarm_view">
-    <!--用户地址-->
-    <view>
-      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
-        <view class="Prarm_Showitem">
-          <view class="Prarm_name">数量：</view>
-          <view class="Prarm_value">{{types[tyeps_index]}}</view>
-        </view>
-      </picker>
-    </view>
-    <view>
-      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
-        <view class="Prarm_Showitem">
-          <view class="Prarm_name">配送地址：</view>
-          <view class="Prarm_value">{{types[tyeps_index]}}</view>
-        </view>
-      </picker>
-    </view>
-    <view>
-      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
-        <view class="Prarm_Showitem">
-          <view class="Prarm_name">详细地址：</view>
-          <view class="Prarm_value">{{types[tyeps_index]}}</view>
-        </view>
-      </picker>
+
+  <view class='cell'>
+    <view class="cell_title">配送地址:</view>
+    <view class="cell_body">
+        <view class="Input_Location">
+          <picker class="Input_Location_picker" mode="multiSelector" range="{{ShowCitys}}" range-key="region_name" bindchange="bindRegionChange" bindcolumnchange="bindcolumnchange" value="{{options}}">
+            <view class="Input_Location_picker_view">
+              <view class="Input_Location_item">{{CityText[0]}}</view>
+              <view class="Input_Location_item">{{CityText[1]}}</view>
+              <view class="Input_Location_item">{{CityText[2]}}</view>
+            </view>
+          </picker>
+      </view>
+  </view>
+</view>
+
+  <view class='cell'>
+    <view class="cell_title">详细地址:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" placeholder='请输入详细地址' bindinput='addressInput' type='text'></input>
     </view>
   </view>
 
-  <view class="Prarm_view">
-    <!--用户信息-->
-    <view>
-      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
-        <view class="Prarm_Showitem">
-          <view class="Prarm_name">联系人:</view>
-          <view class="Prarm_value">{{types[tyeps_index]}}</view>
-        </view>
-      </picker>
-    </view>
-    <view>
-      <picker bindchange='onchange' data-typename='tyeps_index' value="{{tyeps_index}}" range="{{types}}">
-        <view class="Prarm_Showitem">
-          <view class="Prarm_name">联系电话:</view>
-          <view class="Prarm_value">{{types[tyeps_index]}}</view>
-        </view>
-      </picker>
-    </view>
 
+
+</view>
+  
+  
+<view class="params" style="margin-top:10px;">
+
+  <view class='cell'>
+    <view class="cell_title">联系人:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" placeholder='请输入联系人' bindinput='usernameInput' type='text'></input>
+    </view>
+  </view>
+  
+  <view class='cell'>
+    <view class="cell_title">联系电话:</view>
+    <view class="cell_body">
+      <input class="cell_body_title" placeholder='请输入联系电话' bindinput='phoneInput' type='text'></input>
+    </view>
   </view>
 
+</view>
+  
+
+
   <view class="Prarm_view">
-    <button>提交需求</button>
+    <button bindtap='sendBtn' type="primary" style="width:80%;margin:20px auto 20px auto;">提交需求</button>
   </view>
 
 </view>

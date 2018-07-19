@@ -16,8 +16,37 @@
 </view>
 <view class="AllOrders">
   <block wx:for="{{Orders}}" wx:key="*this">
-    <view class="order" wx:if="{{choseclass == 0 || (choseclass == 1 && item.order_status == 0)}}">
-      <view class="order_num"><view style='float:left'>订单号:{{item.order_sn}}</view><view style='float:right'>{{status[item.order_status]}}</view></view>
+    <view class="order">
+      
+      <view class="order_num">
+      <view style='float:left'>订单号:{{item.order_sn}}</view>
+          
+          <view style='float:right' wx:if="{{item.order_status==0 && item.pay_status==0 && item.shipping_status==0}}">
+          待付款
+          </view>
+
+          <view style='float:right' wx:if="{{item.order_status==2 && item.pay_status==0 && item.shipping_status==0}}">
+          已取消
+          </view>
+
+          <view style='float:right' wx:if="{{item.order_status==5 && item.pay_status==2 && item.shipping_status==2}}">
+          已完成
+          </view>
+
+          <view style='float:right' wx:if="{{item.order_status==1 && item.pay_status==2 && item.shipping_status==0}}">
+          待发货
+          </view>
+
+          <view style='float:right' wx:if="{{item.order_status==5 && item.pay_status==2 && item.shipping_status==1}}">
+          待收货
+          </view>
+
+          <view style='float:right' wx:if="{{item.order_status==4 && item.pay_status==0 && item.shipping_status==0}}">
+          退货
+          </view>
+
+      </view>
+      
       <view>
         <block wx:for="{{item.items}}" wx:for-item="oditem" wx:key="*this">
           <view class="order_item">
@@ -38,13 +67,27 @@
       <view class="Order_money">共{{item.items.length}}件商品 实付
         <text class="Order_Money_text">￥{{item.total_fee}}</text>
       </view>
-      <view class="Order_action">
-        <view wx:if="{{!item.isPay}}" class="Order_action_btn_red">支付订单</view>
-        <view wx:if="{{!item.isPay}}" class="Order_action_btn">取消订单</view>
-        <view class="Order_action_btn" wx:if="{{item.isPay}}" >申请退款</view>
-         <view class="Order_action_btn" wx:if="{{item.isCanDel}}" >删除订单</view>
-        <view class="Order_action_btn_red" wx:if="{{item.isHaveStic}}" >查看物流</view>
+      
+      <view class="Order_action" wx:if="{{show[index]['is_show'] && item.order_status==0 && item.pay_status==0 && item.shipping_status==0}}">
+        <view class="Order_action_btn_red" data-index="{{index}}"  data-order_id="{{item.order_id}}" bindtap='payment'>支付订单</view>
+        <view class="Order_action_btn" data-index="{{index}}"  data-order_id="{{item.order_id}}" bindtap='cancel'>取消订单</view>
       </view>
+
+      <view class="Order_action" wx:if="{{item.pay_status==2 && item.shipping_status==1 && item.order_status==5}}">
+        <view class="Order_action_btn_red" data-index="{{index}}" data-order_id="{{item.order_id}}" bindtap='confirm'>确认收货</view>
+      </view>
+
+      <view class="Order_action" wx:if="{{item.pay_status==2 && item.shipping_status==2 && item.order_status==5}}">
+        <view class="Order_action_btn_red" data-index="{{index}}" data-order_id="{{item.order_id}}" bindtap='refund'>退货</view>
+      </view>
+
     </view>
   </block>
 </view>
+
+
+<!--
+        <view class="Order_action_btn" wx:if="{{item.isPay}}" >申请退款</view>
+         <view class="Order_action_btn" wx:if="{{item.isCanDel}}" >删除订单</view>
+        <view class="Order_action_btn_red" wx:if="{{item.isHaveStic}}" >查看物流</view>
+-->

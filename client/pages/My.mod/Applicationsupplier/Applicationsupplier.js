@@ -36,6 +36,15 @@ Page({
     var province = null;
     var cityid = null;
     var district = null;
+    if (e.detail.value[0] == null) {
+      e.detail.value[0] = 0;
+    }
+    if (e.detail.value[1] == null) {
+      e.detail.value[1] = 0;
+    }
+    if (e.detail.value[2] == null) {
+      e.detail.value[2] = 0;
+    }
     for (var index in e.detail.value) {
         var address_id = 0
         if (this.data.ShowCitys[index] == null || 
@@ -72,7 +81,6 @@ Page({
       district: district,
       city: cityid
     });
-
   },
   // onchange: function (e) {
   //   var value = e.detail.value

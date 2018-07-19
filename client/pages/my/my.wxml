@@ -27,7 +27,7 @@
     </view>
   </view>
   <view class='main'>
-    <navigator url="/pages/My.mod/Fullorder/Fullorder?index=4">
+    <navigator url="/pages/My.mod/Fullorder/Fullorder?index=0">
       <view class='cell'>
         <view class='icon'>
           <image src='../../images/record.png'></image>
