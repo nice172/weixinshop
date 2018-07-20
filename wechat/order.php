@@ -1,6 +1,6 @@
 <?php
 
-include_once('../includes/lib_clips.php');
+// include_once('../includes/lib_clips.php');
 include_once('../includes/lib_payment.php');
 
 /* 取得购物类型 */
@@ -572,8 +572,36 @@ unset($_SESSION['direct_shopping']);
 
 if($order['pay_id'] == 5){ //微信支付
 
-    ajaxReturn(['code' => 1,'order' => $order]);
+    $openId = $wxResult['openid'];
+
+    //①、获取用户openid
+    try{
+        
+        $tools = new JsApiPay();
+        //②、统一下单
+        $input = new WxPayUnifiedOrder();
+        $input->SetBody("购买商品");
+        $input->SetAttach($user_id);
+        $input->SetOut_trade_no($order['order_sn']);
+//      $input->SetTotal_fee("1");
+        $money = (string) $order['order_amount']*100;
+        $input->SetTotal_fee($money);
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
+        $input->SetGoods_tag("购买商品");
+        $input->SetNotify_url("https://www.ccl711.com/wechat/notify.php");
+        $input->SetTrade_type("JSAPI");
+        $input->SetOpenid($openId);
+        $config = new WxPayConfig();
+        $wxorder = WxPayApi::unifiedOrder($config, $input);
+        $jsApiParameters = $tools->GetJsApiParameters($wxorder);
+        ajaxReturn(['code' => 1,'order' => json_decode($jsApiParameters,true)]);
+        
+    } catch(Exception $e) {
+        Log::ERROR(json_encode($e));
+    }
     
+    exit;
 }
 
 /**

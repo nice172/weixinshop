@@ -110,7 +110,7 @@ class WxPayConfig extends WxPayConfigInterface
 	 */
 	public function GetSSLCertPath(&$sslCertPath, &$sslKeyPath)
 	{
-		$sslCertPath = '../cert/apiclient_cert.pem';
-		$sslKeyPath = '../cert/apiclient_key.pem';
+	    $sslCertPath = CERT_PATH.'/apiclient_cert.pem';
+	    $sslKeyPath = CERT_PATH.'/apiclient_key.pem';
 	}
 }

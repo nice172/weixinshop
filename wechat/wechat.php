@@ -2,20 +2,17 @@
 
 define('CERT_PATH', __DIR__.'/wxpay/cert');
 
-$appId = 'wx65b59c454554c0f9';
-$appSecret = '16495c72e9a8c7e3b3b5ec095f955997';
+$appId = 'wx4bd459545a672aaa';
+$appSecret = 'f22de972d4b4fdc99a508280ab1982f5';
 
 $jscode = isset($_GET['code']) ? trim($_GET['code']) : '';
 if (empty($jscode)) exit(json_encode(['code' => 0,'msg' => '获取code失败']));
 
-$get_openid = "https://api.weixin.qq.com/sns/jscode2session?appid={$appId}&secret={$appSecret}&js_code=JSCODE&grant_type=authorization_code";
-
+$get_openid = "https://api.weixin.qq.com/sns/jscode2session?appid={$appId}&secret={$appSecret}&js_code={$jscode}&grant_type=authorization_code";
 
 $res = httpRequest($get_openid);
 
-
-print_r($res);
-
+exit(json_encode(['code' => 1,'data' => $res]));
 
 function httpRequest($url,$method='GET',$params=array(),$auth=''){
     $curl = curl_init();

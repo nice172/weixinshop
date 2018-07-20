@@ -9,7 +9,7 @@ include_once ('includes/cls_json.php');
 if ((DEBUG_MODE & 2) != 2) {
     $smarty->caching = true;
 }
-define('CERT_PATH', __DIR__.'/wxpay/cert');
+
 /* 载入语言文件 */
 require_once (ROOT_PATH . 'languages/' . $_CFG['lang'] . '/user.php');
 require_once (ROOT_PATH . 'languages/' . $_CFG['lang'] . '/shopping_flow.php');
@@ -66,11 +66,11 @@ $ui_arr = array(
 	'userinfo',
     'updateuser',
     'getpurchase',
-    'paymentapi',
+    'recharge',
     'mingdansend',
     'mingdanlist',
     'deletemingdan',
-    'address_list',
+    'address_list','order_pay',
     'confirm','cancelorder','refundgoods'
 );
 
@@ -117,7 +117,80 @@ if ($act == 'create'){
     return;
 }
 
+function getOpenId(){
+    $appId = 'wx4bd459545a672aaa';
+    $appSecret = 'f22de972d4b4fdc99a508280ab1982f5';
+    $jscode = isset($_GET['code']) ? trim($_GET['code']) : '';
+    if (empty($jscode)) exit(json_encode(['code' => 0,'msg' => '获取code失败']));
 
+    $get_openid = "https://api.weixin.qq.com/sns/jscode2session?appid={$appId}&secret={$appSecret}&js_code={$jscode}&grant_type=authorization_code";
+    
+    $wxResult = httpRequest($get_openid);
+    if (empty($wxResult) || !isset($wxResult['openid']) || empty($wxResult['openid'])){
+        exit(json_encode(['code' => 0,'msg' => '获取openid失败']));
+    }
+    
+    define('CERT_PATH', __DIR__.'/wxpay/cert');
+    require_once "wxpay/lib/WxPay.Api.php";
+    require_once "wxpay/WxPay.JsApiPay.php";
+    require_once "wxpay/WxPay.Config.php";
+    require_once 'wxpay/log.php';
+    
+    //初始化日志
+    $logHandler= new CLogFileHandler("./wxpay/logs/".date('Y-m-d').'.log');
+    $log = Log::Init($logHandler, 15);
+    
+    return $wxResult;
+}
+
+if ($act == 'recharge'){
+    $data = post();
+    $amount = isset($data['amount']) ? intval($data['amount']) : 0;
+    if ($amount <= 0) exit(json_encode(['code' => 0,'msg' => '充值金额不正确']));
+    $wxResult = getOpenId();
+
+    $order = [
+       'user_id' => $user_id,
+       'amount' => $amount,
+        'add_time' => time(),
+        'paid_time' => 0,
+        'user_note' => '用户充值',
+        'process_type' => 0,
+        'is_paid' => 0
+    ];
+    $db->autoExecute($ecs->table('user_account'), $order);
+    $insertId = $db->insert_id();
+    if ($insertId <= 0){
+        ajaxReturn(['code' => 0,'msg' => '充值失败']);
+    }
+    $order_sn = $insertId.'N'.time().'U'.$user_id;
+    try{
+        
+        $tools = new JsApiPay();
+        //②、统一下单
+        $input = new WxPayUnifiedOrder();
+        $input->SetBody("账户充值");
+        $input->SetAttach("recharge");
+        $input->SetOut_trade_no($order_sn);
+        //$input->SetTotal_fee("1");
+        $money = (string) $order['amount']*100;
+        $input->SetTotal_fee($money);
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
+        $input->SetGoods_tag("账户充值");
+        $input->SetNotify_url("https://www.ccl711.com/wechat/notify.php");
+        $input->SetTrade_type("JSAPI");
+        $input->SetOpenid($wxResult['openid']);
+        $config = new WxPayConfig();
+        $wxorder = WxPayApi::unifiedOrder($config, $input);
+        $jsApiParameters = $tools->GetJsApiParameters($wxorder);
+        ajaxReturn(['code' => 1,'order' => json_decode($jsApiParameters,true)]);
+        
+    } catch(Exception $e) {
+        Log::ERROR(json_encode($e));
+    }
+    return;
+}
 
 if ($act == 'search'){
     
@@ -282,50 +355,6 @@ if ($act == 'mingdansend'){
     return;
 }
 
-if ($act == 'paymentapi'){
-    
-    require_once "wxpay/lib/WxPay.Api.php";
-    require_once "wxpay/WxPay.JsApiPay.php";
-    require_once "wxpay/WxPay.Config.php";
-    require_once 'wxpay/log.php';
-    
-    //初始化日志
-    $logHandler= new CLogFileHandler("./wxpay/logs/".date('Y-m-d').'.log');
-    $log = Log::Init($logHandler, 15);
-        
-    //①、获取用户openid
-    try{
-        
-        $tools = new JsApiPay();
-        $openId = $tools->GetOpenid();
-        
-        //②、统一下单
-        $input = new WxPayUnifiedOrder();
-        $input->SetBody("test");
-        $input->SetAttach("test");
-        $input->SetOut_trade_no("sdkphp".date("YmdHis"));
-        $input->SetTotal_fee("1");
-        $input->SetTime_start(date("YmdHis"));
-        $input->SetTime_expire(date("YmdHis", time() + 600));
-        $input->SetGoods_tag("test");
-        $input->SetNotify_url("http://paysdk.weixin.qq.com/notify.php");
-        $input->SetTrade_type("JSAPI");
-        $input->SetOpenid($openId);
-        $config = new WxPayConfig();
-        $order = WxPayApi::unifiedOrder($config, $input);
-       
-        printf_info($order);
-        $jsApiParameters = $tools->GetJsApiParameters($order);
-        
-        //获取共享收货地址js函数参数
-        $editAddress = $tools->GetEditAddressParameters();
-    } catch(Exception $e) {
-        Log::ERROR(json_encode($e));
-    }
-    
-    return;
-}
-
 if ($act == 'getpurchase'){
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
     if ($id <= 0) ajaxReturn(['code' => 0,'msg' => '加载数据失败']);
@@ -353,9 +382,49 @@ if ($act == 'updateuser'){
 
 if ($act == 'payment'){
  
+    $wxResult = getOpenId();
+
     include 'order.php';
+        
+    return;
+}
+
+if ($act == 'order_pay'){
+    
+    $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+    if ($order_id <= 0) ajaxReturn(['code' => 0,'msg' => '获取订单信息失败']);
+
+    $orderInfo = $db->getRow("select * from {$ecs->table('order_info')} where user_id='{$user_id}' and pay_status!=2 and order_id='{$order_id}'");
+    if (empty($orderInfo)) {
+        ajaxReturn(['code' => 0,'msg' => '获取订单信息失败']);
+    }
+    
+    $wxResult = getOpenId();
+    try{
+        $tools = new JsApiPay();
+        $input = new WxPayUnifiedOrder();
+        $input->SetBody("购买商品");
+        $input->SetAttach($user_id);
+        $input->SetOut_trade_no($orderInfo['order_sn']);
+        $money = (string) $orderInfo['order_amount']*100;
+        $input->SetTotal_fee($money);
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
+        $input->SetGoods_tag("购买商品");
+        $input->SetNotify_url("https://www.ccl711.com/wechat/notify.php");
+        $input->SetTrade_type("JSAPI");
+        $input->SetOpenid($wxResult['openid']);
+        $config = new WxPayConfig();
+        $wxorder = WxPayApi::unifiedOrder($config, $input);
+        $jsApiParameters = $tools->GetJsApiParameters($wxorder);
+        ajaxReturn(['code' => 1,'order' => json_decode($jsApiParameters,true)]);
+        
+    } catch(Exception $e) {
+        Log::ERROR(json_encode($e));
+    }
     
     return;
+    
 }
 
 if ($act == 'userinfo'){
@@ -1505,7 +1574,7 @@ function wx_order_goods($order_id)
     
     $res = $GLOBALS['db']->query($sql);
     
-    $http = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].'/';
+    $http = 'https://'.$_SERVER['HTTP_HOST'].'/';
     
     while ($row = $GLOBALS['db']->fetchRow($res))
     {
@@ -1626,7 +1695,8 @@ function wx_get_user_orders($user_id, $num = 100, $start = 0){
 	$where = '';
 	//未发货
 	if (isset($_GET['shipping_status'])){
-		$where = 'and pay_status=2 and order_status=1 and shipping_status=0';
+	    //and order_status=1
+		$where = 'and pay_status=2 and shipping_status=0';
 	}
 	//未支付
 	if (isset($_GET['not_pay'])){
@@ -1770,6 +1840,7 @@ function wx_get_user_default($user_id)
     $info['integral'] = $row['pay_points'];
     $info['gender'] = $row['user_id'];
     $info['avatarUrl'] = $row['user_pic'];
+    $info['user_money'] = $row['user_money'];
     /* 增加是否开启会员邮件验证开关 */
     $info['is_validate'] = ($GLOBALS['_CFG']['member_email_validate'] && ! $row['is_validated']) ? 0 : 1;
     $info['credit_line'] = $row['credit_line'];
@@ -1997,6 +2068,56 @@ function checkmobile($mobilephone) {
     } else {
         return false;
     }
+}
+
+function httpRequest($url,$method='GET',$params=array(),$auth=''){
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    #curl_setopt($curl, CURLOPT_HEADER, false);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+    //SSL验证
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+    $header[] = "Content-Type:application/json;charset=utf-8";
+    if(!empty($header)){
+        curl_setopt ( $curl, CURLOPT_HTTPHEADER, $header );
+    }
+    $timeout = 30;
+    curl_setopt ($curl, CURLOPT_CONNECTTIMEOUT, $timeout);
+    switch ($method){
+        case "GET" :
+            curl_setopt($curl, CURLOPT_HTTPGET, true);
+            break;
+        case "POST":
+            if(is_array($params)){
+                $params = json_encode($params,320);
+            }
+            #curl_setopt($curl, CURLOPT_POST,true);
+            #curl_setopt($curl, CURLOPT_NOBODY, true);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+            //设置提交的信息
+            curl_setopt($curl, CURLOPT_POSTFIELDS,$params);
+            break;
+        case "PUT" :
+            curl_setopt ($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+            curl_setopt($curl, CURLOPT_POSTFIELDS,json_encode($params,320));
+            break;
+        case "DELETE":
+            curl_setopt ($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+            curl_setopt($curl, CURLOPT_POSTFIELDS,$params);
+            break;
+    }
+    
+    //传递一个连接中需要的用户名和密码，格式为："[username]:[password]"。
+    if (!empty($auth) && isset($auth['username']) && isset($auth['password'])) {
+        curl_setopt($curl, CURLOPT_USERPWD, "{$auth['username']}:{$auth['password']}");
+    }
+    
+    $data = curl_exec($curl);//执行预定义的CURL
+    $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);//获取http返回值,最后一个收到的HTTP代码
+    curl_close($curl);//关闭cURL会话
+    $res = json_decode($data,true);
+    return $res;
 }
 
 ?>

@@ -5,16 +5,14 @@
  * @author widyhu
  *
  */
-class WxPayNotify extends WxPayNotifyReply
-{
+class WxPayNotify extends WxPayNotifyReply {
 	private $config = null;
 	/**
 	 * 
 	 * 回调入口
 	 * @param bool $needSign  是否需要签名返回
 	 */
-	final public function Handle($config, $needSign = true)
-	{
+	final public function Handle($config, $needSign = true){
 		$this->config = $config;
 		$msg = "OK";
 		//当返回false的时候，表示notify中调用NotifyCallBack回调失败获取签名校验失败，此时直接回复失败
