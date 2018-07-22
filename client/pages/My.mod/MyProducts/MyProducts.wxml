@@ -13,17 +13,31 @@
           </block>
         </view>
       </view>
-      <view class="item_stockAndMoney">
-        <view class="item_money">价格:</view>
-        <view class='item_Money_text'>{{item.shop_price}}</view>
-        <view class="item_stock">库存:{{item.goods_number}}件</view>
+
+      <view class="item_stockAndMoney" wx:if="{{goods_id!=item.goods_id}}">
+              <view class="item_money">价格:</view>
+              <view class='item_Money_text'>{{item.shop_price}}</view>
+              <view class="item_stock">库存:{{item.goods_number}}件</view>
       </view>
+
+      <view class="item_stockAndMoney" wx:else>
+            <view class="item_money" style="width:130rpx;">价格:</view>
+            <input value="{{item.shop_price}}" bindinput='updatePrice' style="width:180rpx;margin-top:5px;border-radius:4px;border:1px solid #ccc;"></input>
+            <view class="item_money" style='float:right;text-indent:20px;width:150rpx;'>库存:</view>
+            <input value="{{item.goods_number}}" bindinput='updateNumber' style="float:right;width:140rpx;border-radius:4px;margin-top:6px;border:1px solid #ccc;"></input>件
+      </view>
+
+
       <view class="item_statusAndActBtn">
         <view class="item_status">状态:</view>
         <view class="item_status_text">{{item.is_on_sale == "1"?"显示":"隐藏"}}</view>
 
         <view class="item_actions">
-          <view class="item_action_btn">修改</view>
+
+          <view class="item_action_btn" data-goods_id="{{item.goods_id}}" data-index="{{index}}" bindtap='deleteGoods' style="border-color:#f60;float:right;">删除</view>
+          <view class="item_action_btn" data-goods_id="{{item.goods_id}}" data-index="{{index}}" wx:if="{{goods_id!=item.goods_id}}" bindtap='updateGoods'>修改</view>
+          <view class="item_action_btn" data-goods_id="{{item.goods_id}}" data-index="{{index}}" wx:else bindtap='updateSave'>提交</view>
+
         </view>
       </view>
     </view>

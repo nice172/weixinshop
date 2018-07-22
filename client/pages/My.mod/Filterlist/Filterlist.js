@@ -12,6 +12,28 @@ Page({
     list: []
   },
 
+  mingdanList: function(show){
+    var app = getApp();
+    var _this = this;
+    http.send({
+      url: app.config.ApiUrl + '?act=mingdanlist',
+      method: 'GET',
+      success: function (response) {
+        if(show){
+          wx.hideLoading();
+        }
+        var list = [];
+        list.push(response.data.white);
+        list.push(response.data.black);
+        _this.setData({
+          Lvonenum: response.data.whiteTotal,
+          Lvtwonum: response.data.blackTotal,
+          list: list
+        });
+      }
+    });
+  },
+
   /**
    * 生命周期函数--监听页面加载
    */
@@ -34,23 +56,8 @@ Page({
     setTimeout(function(){
       wx.hideLoading();
     },30000);
-var app = getApp();
-var _this = this;
-    http.send({
-      url: app.config.ApiUrl +'?act=mingdanlist',
-      method:'GET',
-      success: function(response){
-        wx.hideLoading();
-          var list = [];
-          list.push(response.data.white);
-          list.push(response.data.black);
-          _this.setData({
-            Lvonenum: response.data.whiteTotal,
-            Lvtwonum: response.data.blackTotal,
-            list: list
-          });
-      }
-    });
+    
+    this.mingdanList(true);
 
   },
   ChangeClass: function (e) {
@@ -141,7 +148,14 @@ var _this = this;
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-  
+    var _this = this;
+    setInterval(function () {
+      var cache = wx.getStorageSync('update_mingdan');
+      if (cache) {
+        wx.removeStorageSync('update_mingdan');
+        _this.mingdanList(false);
+      }
+    }, 1000);
   },
 
   /**

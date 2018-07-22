@@ -26,6 +26,8 @@ Page({
     status:"1",
     submit:"确认修改",
     purchase_id:null,
+    model:[],
+    model_index:0
   },
 
   /**
@@ -89,6 +91,13 @@ Page({
   
   },
   GetBrand_List:function(){
+    wx.showLoading({
+      title: '加载中...',
+      mask: true,
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
+    });
     var app = getApp()
     var page = this;
     http.send({
@@ -97,12 +106,22 @@ Page({
         act: "brand_list"
       },
       success: function (res) {
+        wx.hideLoading();
         page.setData({
-          types: res.data.brand_list
+          types: res.data.brand_list,
+          model: res.data.model
         })
       }
     })
   },
+
+  changeModel: function(e){
+    var index = e.detail.value;
+    this.setData({
+      model_index: index
+    });
+  },
+
   onchange: function (e) {
     console.log(e)
     var value = e.detail.value
@@ -196,7 +215,7 @@ Page({
         name: this.data.name,
         pur_num: this.data.pur_num,
         brand: this.data.types[this.data.tyeps_index].brand_name,
-        cate: this.data.cate,
+        cate: this.data.model[this.data.model_index].goods_attr_val,
         country: this.data.country,
         province: this.data.province,
         city: this.data.city,
@@ -209,6 +228,14 @@ Page({
       },
       success: function (res) {
         wx.hideLoading();
+        if(res.data.code == 0){
+          wx.showToast({
+            title: res.data.msg,
+            icon: 'none',
+            duration: 2000
+          })
+          return;
+        }
         if(res.data.type == "error"){
           wx.showToast({
             title: res.data.content,

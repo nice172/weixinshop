@@ -69,8 +69,8 @@ $ui_arr = array(
     'recharge',
     'mingdansend',
     'mingdanlist',
-    'deletemingdan',
-    'address_list','order_pay',
+    'deletemingdan','isapply','update_goods',
+    'address_list','order_pay','delete_goods',
     'confirm','cancelorder','refundgoods'
 );
 
@@ -476,6 +476,14 @@ if ($act == 'quick'){
         ajaxReturn(['msg' => '提交失败，请重试','code' => 0]);
     }
     return;
+}
+
+if ($act == 'isapply'){
+	$oneData = $db->getOne("SELECT COUNT(*) as count FROM {$ecs->table('suppliers')} WHERE user_id={$user_id} AND is_check=2");
+	if ($oneData > 0) ajaxReturn(['msg' => '你的申请资料已经提交，请等待系统管理审核通过，谢谢！','code' => 1]);
+	$oneData2 = $db->getOne("SELECT COUNT(*) as count FROM {$ecs->table('suppliers')} WHERE user_id={$user_id} AND is_check=1");
+	if ($oneData2 > 0) ajaxReturn(['msg' => '您已经是供应商了！','code' => 1]);
+	ajaxReturn(['msg' => '未申请','code' => 0]);
 }
 
 if ($act == 'apply'){   
@@ -1063,8 +1071,19 @@ else if ($act == 'act_register') {
 }else if($act == 'brand_list'){
     $sql = "SELECT brand_name FROM " . $GLOBALS['ecs']->table('brand');
     $brand_list = $db->getAll($sql);
+    
+    include 'WxCategory.class.php';
+    $WxCategory = new WxCategory();
+    $catelist = $WxCategory->get_child_tree();
+    $ban_categories = $WxCategory->get_lists($catelist);
+    $model = $ban_categories[218]['attrs']; //型号
+    $tempmodel = [];
+    foreach ($model as $v){
+    	$tempmodel[] = $v;
+    }
     echo json_encode(array(
-        'brand_list' => $brand_list
+        'brand_list' => $brand_list,
+    		'model' => $tempmodel
     ));
     exit();
 }elseif ($act == 'mingdanbrand'){
@@ -1099,10 +1118,44 @@ elseif ($act == 'order_list')
 else if($act == 'purchase_list'){
     $pager  = ! empty($_GET['act']) ? $_GET['act'] : '0';
     $pager= $pager*20;
-    $sql = "SELECT * FROM " .$ecs->table('user_purchase'). " WHERE user_id = '$user_id' LIMIT {$pager}, 20";
+    $sql = "SELECT * FROM " .$ecs->table('user_purchase'). " WHERE user_id = '$user_id' order by purchase_id desc LIMIT {$pager}, 100";
     $purchases = $db->getAll($sql);
     echo json_encode($purchases);
     exit();
+}elseif ($act == 'delete_goods'){
+	$sql = "SELECT * FROM " . $ecs->table('suppliers') . " WHERE user_id = '$user_id'";
+	$suppliers = $db->getRow($sql);
+	$suppliers_id = $suppliers['suppliers_id'];
+	if (!$suppliers_id){
+		ajaxReturn(['code' => 0,'msg' => '无店铺suppliers_id']);
+	}
+	$goods_id = isset($_GET['goods_id']) ? intval($_GET['goods_id']) : 0;
+	if ($goods_id <= 0) ajaxReturn(['code' => 0,'msg' => '删除商品失败']);
+	$db->autoExecute($ecs->table('goods'), ['is_delete' => 1],'UPDATE',"suppliers_id={$suppliers_id} and goods_id=".$goods_id);
+	if ($db->affected_rows()){
+		ajaxReturn(['code' => 1,'msg' => '删除商品成功']);
+	}
+	ajaxReturn(['code' => 0,'msg' => '删除商品失败']);
+}elseif ($act == 'update_goods'){
+	$data = post();
+	if (empty($data)) ajaxReturn(['code' => 0,'msg' => '更新商品失败']);
+	$sql = "SELECT * FROM " . $ecs->table('suppliers') . " WHERE user_id = '$user_id'";
+	$suppliers = $db->getRow($sql);
+	$suppliers_id = $suppliers['suppliers_id'];
+	if (!$suppliers_id){
+		ajaxReturn(['code' => 0,'msg' => '无店铺suppliers_id']);
+	}
+	$goods_id = isset($data['goods_id']) ? intval($data['goods_id']) : 0;
+	$shop_price= isset($data['shop_price']) ? round(trim($data['shop_price']),2) : 0;
+	$goods_number= isset($data['goods_number']) ? intval($data['goods_number']) : 0;
+	if ($goods_id <= 0) ajaxReturn(['code' => 0,'msg' => '更新商品失败']);
+	if ($shop_price < 0) ajaxReturn(['code' => 0,'msg' => '商品价格不正确']);
+	if ($goods_number < 0) ajaxReturn(['code' => 0,'msg' => '商品库存不正确']);
+	$db->autoExecute($ecs->table('goods'), ['goods_number' => $goods_number,'shop_price' => $shop_price],'UPDATE',"suppliers_id={$suppliers_id} and goods_id=".$goods_id);
+	if ($db->affected_rows()){
+		ajaxReturn(['code' => 1,'msg' => '更新商品成功']);
+	}
+	ajaxReturn(['code' => 0,'msg' => '更新商品失败']);
 }
 //获取用户库存列表
 else if($act == 'stock_list'){
@@ -1113,15 +1166,25 @@ else if($act == 'stock_list'){
         echo  json_encode(array(error => "无店铺suppliers_id"));
         exit;
     }
-    $sql = "SELECT * FROM " . $ecs->table('goods') . " WHERE is_delete = 0 AND suppliers_id = '{$suppliers_id}'";
-    $goods = $db->getAll($sql);
-    foreach ($goods as $key =>$good) {
-        $properties = get_goods_properties( $good["goods_id"]);
-        $goods[$key]["properties"] = $properties["lnk"];
-        $pics = get_goods_gallery($good["goods_id"]);
-        $goods[$key]["img"] =$pics;
-    }
-    echo  json_encode(array(goods => $goods));
+   $page = isset($_GET['page']) && intval($_GET['page']) > 0 ? intval($_GET['page']) : 1;
+   $page_size = 20;
+   $count = $db->getOne("select count(*) as count from {$ecs->table('goods')} where is_delete = 0 AND suppliers_id = '{$suppliers_id}'");
+   $totalPage = ceil($count / $page_size);
+   $limit = ($page - 1) * $page_size . ','. $page_size;
+   
+   $sql = "SELECT * FROM " . $ecs->table('goods') . " WHERE is_delete = 0 AND suppliers_id = '{$suppliers_id}' limit $limit";
+   $goods = $db->getAll($sql);
+	if (!empty($goods)){
+		foreach ($goods as $key =>$good) {
+			$properties = get_goods_properties($good["goods_id"]);
+			$goods[$key]["properties"] = $properties["lnk"];
+			$pics = get_goods_gallery($good["goods_id"]);
+			$goods[$key]["img"] =$pics;
+		}
+	}
+    echo  json_encode(array(goods => $goods,
+    		'totalPage' => $totalPage,
+    		'count' => $count));
     exit();
 }//紧急采购管理增加修改
 elseif ($act == 'act_edit_purchase')
@@ -1153,6 +1216,9 @@ elseif ($act == 'act_edit_purchase')
         exit;
     }
     
+   	if (empty($purchase['cate'])) {
+   		ajaxReturn(['code' => 0,'msg' => '请选择一个型号']);
+   	}
     
     if(!$purchase['province'] || !$purchase['city'] || !$purchase['district'] || !$purchase['name'] || !$purchase['pur_num'] || !$purchase['content']){
         show_json_message('必填项不能为空', '我的采购', 'user.php?act=purchase_list&purchase_id='.$purchase_id, 'error');

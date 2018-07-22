@@ -29,11 +29,15 @@ Page({
     wx.setNavigationBarTitle({
       title: options.type==1?'黑名单':'白名单'
     });
+    this.mingdanList();
+  },
+
+  mingdanList: function(){
     var app = getApp();
     var _this = this;
     http.send({
-      url: app.config.ApiUrl +'?act=mingdanbrand',
-      success: function(res){
+      url: app.config.ApiUrl + '?act=mingdanbrand',
+      success: function (res) {
         wx.hideLoading();
         _this.setData({
           brandList: res.data.bandlist
@@ -63,6 +67,9 @@ Page({
         },
         success: function(response){
             wx.hideLoading();
+            if(response.data.code == 1){
+              wx.setStorageSync('update_mingdan', 1);
+            }
             wx.showToast({
               title: response.data.msg,
               icon: 'none',
@@ -99,7 +106,7 @@ Page({
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-  
+
   },
 
   /**

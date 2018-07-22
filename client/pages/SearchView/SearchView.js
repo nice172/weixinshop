@@ -53,10 +53,12 @@ Page({
         break;
       }
     }
+    this.setData({
+      attrIndex: e.target.dataset.index
+    });
     if(!flag) return;
     selectedAttr.push(index);
     this.setData({
-      attrIndex: e.target.dataset.index,
       selectedAttr: selectedAttr
     });
   },

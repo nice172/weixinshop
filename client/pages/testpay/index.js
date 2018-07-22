@@ -26,7 +26,52 @@ Page({
               url: app.config.Url + '/wechat/wechat.php?code=' + res.code,
               method:'GET',
               success: function(response){
-                console.log(response);
+                if (response.data.code==1){
+
+                  http.send({
+                    url: app.config.Url + '/wechat/pay.php?openid=' + response.data.data.openid,
+                    method: 'GET',
+                    success: function(result){
+                      if(result.data.code == 1){
+                        var order = result.data.order;
+                        wx.requestPayment({
+                          timeStamp: order.timeStamp,
+                          nonceStr: order.nonceStr,
+                          package: order.package,
+                          signType: order.signType,
+                          paySign: order.paySign,
+                          success: function(res) {
+                            if (res.errMsg == 'requestPayment:ok'){
+                              wx.showToast({
+                                title: '支付成功',
+                                icon: 'none',
+                                mask: true
+                              })
+                            }
+                          },
+                          fail: function(res) {
+                            if (res.errMsg == 'requestPayment:fail cancel') {
+                              wx.showToast({
+                                title: '用户取消支付',
+                                icon: 'none',
+                                mask: true
+                              })
+                            }else{
+                              wx.showToast({
+                                title: '支付失败',
+                                icon: 'none',
+                                mask: true
+                              })
+                            }
+                          },
+                          complete: function(res) {
+                            console.log(res);
+                          },
+                        })
+                      }
+                    }
+                  });
+                }
               }
           });
           }
@@ -34,7 +79,7 @@ Page({
         },
         fail: function(res) {},
         complete: function(res) {},
-      })
+      });
 
   },
 

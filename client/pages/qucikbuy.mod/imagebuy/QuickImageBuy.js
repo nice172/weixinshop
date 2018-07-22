@@ -1,5 +1,6 @@
 var http = require('../../../request');
 var city = require('../../../city');
+
 Page({
 
   /**

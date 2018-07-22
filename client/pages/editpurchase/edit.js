@@ -26,7 +26,9 @@ Page({
     status:"1",
     submit:"确认修改",
     purchase_id:null,
-    data:{}
+    data:{},
+    model: [],
+    model_index: 0
   },
 
   /**
@@ -86,7 +88,7 @@ Page({
             pur_num: response.data.data.pur_num,
             cate: response.data.data.cate,
             address: response.data.data.address,
-            content: response.data.data.address,
+            content: response.data.data.content,
             brand: response.data.data.brand,
             CityText: [provinceText, cityText, districtText]
           });
@@ -145,6 +147,21 @@ Page({
   
   },
 
+  changeModel: function (e) {
+    var index = e.detail.value;
+    var cate = '';
+    for (var i in this.data.model) {
+      if (index == i) {
+        cate = this.data.model[i]['goods_attr_val'];
+        break;
+      }
+    }
+    this.setData({
+      model_index: index,
+      cate: cate
+    });
+  },
+
   /**
    * 页面上拉触底事件的处理函数
    */
@@ -175,9 +192,20 @@ Page({
             break;
           }
         }
+
+        var model_index = 0;
+        for (var i in res.data.model) {
+          if (res.data.model[i]['goods_attr_val'] == page.data.cate) {
+            model_index = i;
+            break;
+          }
+        }
+
         page.setData({
           tyeps_index: type_index,
-          types: res.data.brand_list
+          types: res.data.brand_list,
+          model: res.data.model,
+          model_index: model_index
         });
       }
     })
@@ -282,6 +310,14 @@ Page({
       },
       success: function (res) {
         wx.hideLoading();
+        if (res.data.code == 0) {
+          wx.showToast({
+            title: res.data.msg,
+            icon: 'none',
+            duration: 2000
+          })
+          return;
+        }
         if(res.data.type == "error"){
           wx.showToast({
             title: res.data.content,

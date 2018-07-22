@@ -9,9 +9,9 @@
   <view class='cell'>
     <view class="cell_title">充值金额</view>
     <view class="cell_body">
-      <input class="cell_body_title" placeholder='请输入要充值的金额!' type='number'></input>
+      <input class="cell_body_title" bindinput='Recharge' placeholder='请输入要充值的金额!' type='number'></input>
     </view>
   </view>
 
 </view>
-<button class="RedBtn">微信充值</button>
+<button bindtap='RedBtn' class="RedBtn">微信充值</button>

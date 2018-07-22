@@ -34,103 +34,138 @@ Page({
     });
     var app = getApp()
     var page = this;
+
     http.send({
-      url: app.config.ApiUrl + '?act=user_info',
-      data: {
-      },
-      method: "POST",
+      url: app.config.ApiUrl + '?act=get_address_default',
+      data: {},
+      method: "GET",
       header: {
-        "content-type": "application/x-www-form-urlencoded",
+        "content-type": "application/x-www-form-urlencoded"
       },
       success: function (res) {
-        if (res.data["info"] != null) {
-          http.send({
-            url: app.config.ApiUrl + '?act=get_address_default',
-            data: {},
-            method: "GET",
-            header: {
-              "content-type": "application/x-www-form-urlencoded"
-            },
-            success: function (res) {
-                if(res.data.code == 0){
-                    wx.showToast({
-                      title: res.data.msg,
-                      icon: 'none',
-                      mask: true,
-                      success: function(res) {},
-                      fail: function(res) {},
-                      complete: function(res) {},
-                    });
-                    setTimeout(() => {
-                      wx.navigateTo({
-                        url: '/pages/My.mod/Receivingaddress/Receivingaddress',
-                        success: function(res) {},
-                        fail: function(res) {},
-                        complete: function(res) {},
-                      })
-                    },1500);
-                }else{
-
-                http.send({
-                  url: app.config.ApiUrl + '?act=payment',
-                  data:{},
-                  method:'POST',
-                  header: {
-                    "content-type": "application/x-www-form-urlencoded"
-                  },
-                  success: function(response){
-                      if(response.data.code == 1){
-
-                      wx.login({
-                        success: function(res) {
-                          
-                        },
-                        fail: function(res) {},
-                        complete: function(res) {},
-                      });
-
-                      wx.requestPayment({
-                        timeStamp: '',
-                        nonceStr: '',
-                        package: '',
-                        signType: '',
-                        paySign: '',
-                        success: function(res) {},
-                        fail: function(res) {},
-                        complete: function(res) {},
-                      });
-
-
-                      }else{
-                        wx.showToast({
-                          title: response.data.msg,
-                          icon: 'none',
-                          mask: true
-                        });
-                      }
-                  }
-                });
-
-
-                }
-            }
-          });
-
-
-        }else{
+        if (res.data.code == 0) {
           wx.showToast({
-            title: '请先登录用户',
-            icon: 'none'
+            title: res.data.msg,
+            icon: 'none',
+            mask: true,
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
           });
           setTimeout(() => {
             wx.navigateTo({
-              url: '../../Login/Login',
+              url: '/pages/My.mod/Receivingaddress/Receivingaddress',
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
             })
-          },1000);
+          }, 1500);
+        } else {
+
+          wx.login({
+            success: function (res) {
+              if (res.code) {
+                http.send({
+                  url: app.config.ApiUrl + '?act=payment&code=' + res.code,
+                  data: {},
+                  method: 'POST',
+                  header: {
+                    "content-type": "application/x-www-form-urlencoded"
+                  },
+                  success: function (response) {
+                    wx.hideLoading();
+                    
+                    if (response.data.code == 1) {
+
+                      var order = response.data.order;
+                      wx.requestPayment({
+                        timeStamp: order.timeStamp,
+                        nonceStr: order.nonceStr,
+                        package: order.package,
+                        signType: order.signType,
+                        paySign: order.paySign,
+                        success: function (res) {
+                          if (res.errMsg == 'requestPayment:ok') {
+                            wx.showToast({
+                              title: '支付成功',
+                              icon: 'none',
+                              mask: true
+                            });
+                            setTimeout(function () {
+                              wx.redirectTo({
+                                url: '../Fullorder/Fullorder?index=2',
+                                success: function (res) { },
+                                fail: function (res) { },
+                                complete: function (res) { },
+                              })
+                            }, 1500);
+                          }
+                        },
+                        fail: function (res) {
+                          if (res.errMsg == 'requestPayment:fail cancel') {
+                            wx.showToast({
+                              title: '用户取消支付',
+                              icon: 'none',
+                              mask: true
+                            })
+                          } else {
+                            wx.showToast({
+                              title: '支付失败',
+                              icon: 'none',
+                              mask: true
+                            })
+                          }
+                          setTimeout(function () {
+                            wx.redirectTo({
+                              url: '../Fullorder/Fullorder',
+                              success: function (res) { },
+                              fail: function (res) { },
+                              complete: function (res) { },
+                            })
+                          }, 1500);
+                        },
+                        complete: function (res) {
+                          console.log(res);
+                        },
+                      })
+
+
+                    } else if (response.data.code == '20001'){
+
+                      wx.showToast({
+                        title: '请先登录用户',
+                        icon: 'none'
+                      });
+                      setTimeout(() => {
+                        wx.navigateTo({
+                          url: '../../Login/Login',
+                        })
+                      }, 1000);
+
+                    } else {
+                      wx.showToast({
+                        title: response.data.msg,
+                        icon: 'none',
+                        mask: true
+                      });
+                    }
+                  }
+                });
+              }
+
+            },
+            fail: function (res) { },
+            complete: function (res) { },
+          });
+
+
+
+
 
         }
       }
     });
+
   },
 
   eidtNum:function(e){

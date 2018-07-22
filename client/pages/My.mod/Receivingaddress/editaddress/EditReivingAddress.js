@@ -42,9 +42,9 @@ Page({
           }
           console.log(data)
           var incity = city.findName(cache.province, cache.city, cache.district);
-          console.log(incity);
           data["ShowCitys"] = [city.shop_province_list, city.city_list[incity.province_id], city.district_list[incity.cityid_id]];
           data["City"] = [incity.province, incity.cityid, incity.district];
+          data['CityText'] = [incity.province, incity.cityid, incity.district];
           this.setData(data)
         }
       },

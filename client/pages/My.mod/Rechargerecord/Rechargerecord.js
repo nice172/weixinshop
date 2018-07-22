@@ -6,34 +6,7 @@ Page({
    * 页面的初始数据
    */
   data: {
-      cord:[
-        {
-          money:1200,
-          time:"2018-06-07 14:43:24",
-          isSuccess:false
-        },
-        {
-          money: 1200,
-          time: "2018-06-07 14:43:24",
-          isSuccess: true
-        },
-        {
-          money: 3414.32,
-          time: "2018-06-07 14:43:24",
-          isSuccess: true
-        },
-        {
-          money: 125.123,
-          time: "2018-06-07 14:43:24",
-          isSuccess: false
-        },
-        {
-          money: 125123,
-          time: "2018-06-07 14:43:24",
-          isSuccess: false
-        }
-
-      ]
+      cord:[]
   },
 
   /**
@@ -92,6 +65,16 @@ Page({
   
   },
   refresh_list: function () {
+    wx.showLoading({
+      title: '加载中...',
+      mask: true,
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
+    });
+    setTimeout(function () {
+      wx.hideLoading();
+    }, 30000);
     var app = getApp()
     var page = this;
     //获取热门推荐
@@ -104,7 +87,7 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success: function (res) {
-        console.log(res)
+        wx.hideLoading();
         page.setData({
           cord: res.data
         })

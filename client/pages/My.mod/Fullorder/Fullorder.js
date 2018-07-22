@@ -73,6 +73,28 @@ Page({
               'is_show': true
             });
         }
+        if (res.data.code == 20001) {
+          page.setData({
+            show: show
+          });
+          wx.showToast({
+            title: '请先登录用户',
+            icon: 'none',
+            mask: true,
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
+          });
+          setTimeout(function () {
+            wx.navigateTo({
+              url: '../../Login/Login',
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            });
+          }, 1500);
+          return;
+        }
         page.setData({
           show: show,
           Orders: res.data
@@ -187,16 +209,88 @@ Page({
 
   payment: function(event){
       wx.showToast({
-        title: '调试中',
+        title: '请稍后...',
         icon: 'none',
         mask: true,
         success: function(res) {},
         fail: function(res) {},
         complete: function(res) {},
       });
-
+    setTimeout(function () {
+      wx.hideLoading();
+    }, 30000);
+      var app = getApp();
+      var _this = this;
       var order_id = event.target.dataset.order_id;
-      console.log(order_id);
+    var index = event.target.dataset.index;
+      wx.login({
+        success: function(res) {
+
+            if(res.code){
+              http.send({
+                url: app.config.ApiUrl + '?act=order_pay&code=' + res.code + '&order_id=' + order_id,
+                method:'GET',
+                success: function (response){
+                  wx.hideLoading();
+                  if (response.data.code == 1) {
+                    var order = response.data.order;
+                    wx.requestPayment({
+                      timeStamp: order.timeStamp,
+                      nonceStr: order.nonceStr,
+                      package: order.package,
+                      signType: order.signType,
+                      paySign: order.paySign,
+                      success: function (res) {
+                        if (res.errMsg == 'requestPayment:ok') {
+                          wx.showToast({
+                            title: '支付成功',
+                            icon: 'none',
+                            mask: true
+                          });
+                          var show = _this.data.show;
+                          show[index]['is_show'] = false;
+                          _this.setData({
+                            show: show
+                          });
+                        }
+                      },
+                      fail: function (res) {
+                        if (res.errMsg == 'requestPayment:fail cancel') {
+                          wx.showToast({
+                            title: '用户取消支付',
+                            icon: 'none',
+                            mask: true
+                          })
+                        } else {
+                          wx.showToast({
+                            title: '支付失败',
+                            icon: 'none',
+                            mask: true
+                          })
+                        }
+                       
+                      },
+                      complete: function (res) {
+                        console.log(res);
+                      },
+                    })
+
+
+                  } else {
+                    wx.showToast({
+                      title: response.data.msg,
+                      icon: 'none',
+                      mask: true
+                    });
+                  }
+                }
+              });
+            }
+
+        },
+        fail: function(res) {},
+        complete: function(res) {},
+      })  
 
   },
 

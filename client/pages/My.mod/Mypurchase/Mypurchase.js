@@ -6,13 +6,17 @@ Page({
    * 页面的初始数据
    */
   data: {
-    purchases:[]
+    purchases:[],
+    show: true
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    this.setData({
+      show: true
+    });
     wx.showLoading({
       title: '加载中...',
       mask: true,
@@ -34,41 +38,51 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    var _this = this;
-      setInterval(function(){
-
-        try {
-          var cache = wx.getStorageSync('purchase_id');
-          if (cache) {
-            var purchases = _this.data.purchases;
-            for (var i in purchases) {
-              if (purchases[i]['purchase_id'] == cache.purchase_id) {
-                var current = purchases[i];
-                current.name = cache['name'];
-                current.brand = cache['brand'];
-                current.cate = cache['cate'];
-                current.pur_num = cache['pur_num'];
-                purchases[i] = current;
-              }
-            }
-            _this.setData({
-              purchases: purchases
-            });
-            wx.removeStorageSync('purchase_id');
-          }
-        } catch (e) {
+    this.setData({
+      show: true
+    });
+    // var _this = this;
+    //   setInterval(function(){
+    //     try {
+    //       var cache = wx.getStorageSync('purchase_id');
+    //       if (cache) {
+    //         var purchases = _this.data.purchases;
+    //         for (var i in purchases) {
+    //           if (purchases[i]['purchase_id'] == cache.purchase_id) {
+    //             var current = purchases[i];
+    //             current.name = cache['name'];
+    //             current.brand = cache['brand'];
+    //             current.cate = cache['cate'];
+    //             current.pur_num = cache['pur_num'];
+    //             purchases[i] = current;
+    //           }
+    //         }
+    //         _this.setData({
+    //           purchases: purchases
+    //         });
+    //         wx.removeStorageSync('purchase_id');
+    //       }
+    //     } catch (e) {
           
-        }
-
-
-      },1000);
+    //     }
+    //   },1000);
   },
 
   /**
    * 生命周期函数--监听页面隐藏
    */
   onHide: function () {
-  
+    this.setData({
+      show: false
+    });
+    var _this = this;
+    setInterval(function () {
+      var cache = wx.getStorageSync('purchase_id');
+      if (cache) {
+        wx.removeStorageSync('purchase_id');
+        _this.refresh_list();
+      }
+    }, 1000);
   },
 
   /**
@@ -167,8 +181,30 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success: function (res) {
-        wx.hideLoading();
-        console.log(res)
+        
+        if(page.data.show){
+          wx.hideLoading();
+        }
+        if (res.data.code == 20001) {
+          
+          wx.showToast({
+            title: '请先登录用户',
+            icon: 'none',
+            mask: true,
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
+          });
+          setTimeout(function () {
+            wx.navigateTo({
+              url: '../../Login/Login',
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            });
+          }, 1500);
+          return;
+        }
         page.setData({
           purchases:res.data
         })

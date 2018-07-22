@@ -1,5 +1,6 @@
 /* pages/purchase/AddNewNeed/AddNewNeed.wxss */
-
+@import "/template/Input_Location.wxss";
+@import "/template/TableCell.wxss";
 page {
   background: #f6f6f6;
 }
@@ -32,7 +33,7 @@ page {
   height: 60rpx;
   margin: 10rpx;
   width: 100%;
-  border: 1px solid #0066cb;
+  /* border: 1px solid #0066cb; */
 }
 .cell_textarea{
     width: 700rpx;
@@ -44,7 +45,7 @@ page {
 
 .cell_picker{
   margin: 10rpx;
-  border: 1px solid #0066cb;
+  /* border: 1px solid #0066cb; */
   height: 60rpx;
   width: 100%;
   line-height: 60rpx;

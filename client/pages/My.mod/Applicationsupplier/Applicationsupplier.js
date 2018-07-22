@@ -27,7 +27,9 @@ Page({
       ShowCitys: [city.shop_province_list, city.city_list[2], city.district_list[37]],
       CityText: ["北京", "北京市", "东城区"],
       options:[],
-      oncity: 2
+      oncity: 2,
+      isapply: true,
+      msg: ''
   },
 
   bindRegionChange: function (e) {
@@ -108,7 +110,35 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-      
+      var app = getApp();
+      var _this = this;
+      wx.showLoading({
+        title: '加载中...',
+        mask: true,
+        success: function(res) {},
+        fail: function(res) {},
+        complete: function(res) {},
+      })
+      http.send({
+        url: app.config.ApiUrl+'?act=isapply',
+        method: 'GET',
+        success: function(res){
+          wx.hideLoading();
+          if(res.data.code == 1){
+              _this.setData({
+                isapply: false,
+                msg: res.data.msg
+              });
+          }
+        }
+      });
+  },
+
+  goBtn: function(){
+   
+    wx.switchTab({
+      url: '../../shop/shop'
+    })
   },
 
   suppliers_name: function(e){

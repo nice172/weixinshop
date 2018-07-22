@@ -2,7 +2,10 @@
 var http = require('../../request');
 Page({
   data: {
-    user: {},
+    user: {
+      surplus: 0, gender: 0, integral:0,
+      username: '***', avatarUrl:''
+    },
     isLogin:false
   },
   onLoad: function () {
@@ -15,11 +18,12 @@ Page({
           console.log('auth ok');
           wx.getUserInfo({
             success: function (res) {
-              console.log(res.userInfo)
+              var user = page.data.user;
+              user['avatarUrl'] = res.userInfo.avatarUrl;
               page.setData({
-                //isLogin:true,
-                user:res.userInfo
-              })
+                user:user
+              });
+              page.GetUserinfo();
             }
           })
         }
@@ -40,9 +44,12 @@ Page({
       success: function (res) {
         if(res.data["info"] != null){
           app.globalUserInfo = true;
+          var avatarUrl = page.data.user.avatarUrl;
+          var user = res.data["info"];
+          user['avatarUrl'] = avatarUrl;
           page.setData({
             isLogin:true,
-            user: res.data["info"]
+            user: user
           })
         }
       }
@@ -57,9 +64,9 @@ Page({
   },
   //事件处理函数
   toRecharge: function () {
-    wx.navigateTo({
-      url: '../recharge/recharge'
-    });
+    // wx.navigateTo({
+    //   url: '../recharge/recharge'
+    // });
   },
   toRechargeRecord: function () {
     wx.navigateTo({

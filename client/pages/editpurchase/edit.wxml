@@ -4,7 +4,7 @@
   <view class='cell'>
     <view class="cell_title">标题:</view>
     <view class="cell_body">
-      <input class="cell_body_title" type='text' value='{{name}}' data-typename="name" bindinput='onchange'></input>
+      <input class="cell_body_title" type='text' placeholder='请输入标题' value='{{name}}' data-typename="name" bindinput='onchange'></input>
     </view>
   </view>
 </view>
@@ -12,7 +12,7 @@
   <view class='cell'>
     <view class="cell_title">数量:</view>
     <view class="cell_body">
-      <input class="cell_body_title" type='number' value='{{pur_num}}'  data-typename="pur_num" bindinput='onchange'></input>
+      <input class="cell_body_title" type='number' placeholder='请输入数量' value='{{pur_num}}'  data-typename="pur_num" bindinput='onchange'></input>
     </view>
   </view>
 
@@ -27,7 +27,9 @@
   <view class='cell'>
     <view class="cell_title">型号:</view>
     <view class="cell_body">
-      <input class="cell_body_title" type='text' value='{{cate}}' data-typename="cate" bindinput='onchange'></input>
+      <picker class="cell_picker" bindchange='changeModel' range-key="goods_attr_val" value="{{model_index}}" range="{{model}}">
+        <view class="Prarm_value">{{model[model_index].goods_attr_val}}</view>
+      </picker>
     </view>
   </view>
    <view class='cell'>
@@ -47,7 +49,7 @@
    <view class='cell'>
     <view class="cell_title">详细地址</view>
     <view class="cell_body">
-      <input class="cell_body_title" type='text' value='{{address}}' data-typename="address" bindinput='onchange'></input>
+      <input class="cell_body_title" type='text' placeholder='请输入详细地址' value='{{address}}' data-typename="address" bindinput='onchange'></input>
     </view>
   </view>
 </view>
@@ -57,11 +59,13 @@
     <view class="cell_title">详细内容</view>
   </view>
    <view class='cell' style='height:300rpx;'>
-    <textarea class="cell_textarea"  data-typename="content" bindinput='onchange'>{{content}}</textarea>
+    <textarea class="cell_textarea" data-typename="content" bindinput='onchange'>{{content}}</textarea>
   </view>
 </view>
-  <view class="main">
-   <view class='cell'>
-    <button class="SumbitBtn" bindtap='addNewNeed'>提交修改</button>
-    </view>
+  <view class="main" style='background:none;'>
+   
+  <view class="Prarm_view">
+    <button bindtap='addNewNeed' type="primary" style="width:80%;margin:20px auto 50px auto;">提交修改</button>
+  </view>
+
   </view>

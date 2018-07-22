@@ -27,6 +27,7 @@ Page({
   payaudio: function(e){
     const innerAudioContext = wx.createInnerAudioContext();
     innerAudioContext.autoplay = true;
+    innerAudioContext.obeyMuteSwitch = false;
     innerAudioContext.src = this.data.tempFilePath;
     innerAudioContext.onPlay(() => {
       console.log('开始播放')
@@ -72,7 +73,7 @@ Page({
         sampleRate: 44100,
         numberOfChannels: 1,
         encodeBitRate: 192000,
-        format: 'aac',
+        format: 'mp3',
         //frameSize: 50
       };
       recorderManager.start(options);
