@@ -22,6 +22,16 @@ Page({
       url: "/pages/qucikbuy.mod/VidioBuy/QuickVidioBuy"
     })
   },
+  showMsg: function(){
+    wx.showModal({
+      title: '提示',
+      content: '现在小程序无法上传文件',
+      showCancel: true,
+      success: function(res) {},
+      fail: function(res) {},
+      complete: function(res) {},
+    })
+  },
   /**
    * 生命周期函数--监听页面加载
    */

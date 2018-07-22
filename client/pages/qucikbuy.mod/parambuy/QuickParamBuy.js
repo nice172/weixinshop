@@ -36,6 +36,10 @@ Page({
     CityText: ["北京", "北京市", "东城区"],
     options: [],
     oncity: 2,
+    num: 0,
+    address: '',
+    username: '',
+    phone: '',
   },
   onchange:function(e){
     console.log(e)
@@ -175,6 +179,12 @@ Page({
     var province = null;
     var cityid = null;
     var district = null;
+    if (e.detail.value[0] == null) {
+      e.detail.value[0] = 0;
+    }
+    if (e.detail.value[1] == null) {
+      e.detail.value[1] = 0;
+    }
     if (e.detail.value[2] == null) {
       e.detail.value[2] = 0;
     }
@@ -213,6 +223,102 @@ Page({
       province: province,
       district: district,
       city: cityid
+    });
+
+  },
+  numInput: function (e) {
+    this.setData({
+      num: e.detail.value
+    });
+  },
+  addressInput: function (e) {
+    this.setData({
+      address: e.detail.value
+    });
+  },
+  usernameInput: function (e) {
+    this.setData({
+      username: e.detail.value
+    });
+  },
+  phoneInput: function (e) {
+    this.setData({
+      phone: e.detail.value
+    });
+  },
+
+  sendBtn: function () {
+    var app = getApp();
+    if (this.data.num <= 0) {
+      wx.showToast({
+        title: '请输入数量',
+        icon: 'none',
+        mask: true
+      });
+      return;
+    }
+    if (this.data.address == '') {
+      wx.showToast({
+        title: '请输入详细地址',
+        icon: 'none',
+        mask: true
+      });
+      return;
+    }
+    if (this.data.username == '') {
+      wx.showToast({
+        title: '请输入联系人',
+        icon: 'none',
+        mask: true
+      });
+      return;
+    }
+    if (this.data.phone == '') {
+      wx.showToast({
+        title: '请输入联系电话',
+        icon: 'none',
+        mask: true
+      });
+      return;
+    }
+    wx.showLoading({
+      title: '正在提交中...',
+      mask: true,
+    });
+    setTimeout(() => {
+      wx.hideLoading();
+    }, 30000);
+    http.send({
+      url: app.config.ApiUrl + "?act=quick&type=params",
+      method: 'POST',
+      data: {
+        num: this.data.num,
+        username: this.data.username,
+        phone: this.data.phone,
+        address: this.data.address,
+        province: this.data.province,
+        city: this.data.city,
+        district: this.data.district,
+        cate_name: this.data.categoryList[this.data.cateIndex]['name'],
+        brand_name: this.data.brandList[this.data.brandIndex]['brand_name'],
+        model: this.data.modelList[this.data.modelIndex]['goods_attr_val'],
+        tong: this.data.tongList[this.data.tongIndex]['goods_attr_val'],
+        ban: this.data.banList[this.data.banIndex]['goods_attr_val'],
+        size: this.data.sizeList[this.data.sizeIndex]['goods_attr_val'],
+      },
+      success: function (response){
+        wx.showToast({
+          title: response.data.msg,
+          icon: 'none',
+        });
+        if (response.data.code == 1) {
+          setTimeout(() => {
+            wx.navigateBack({
+              delta: 1,
+            });
+          }, 1500);
+        }
+      }
     });
 
   },

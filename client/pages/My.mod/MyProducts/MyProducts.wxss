@@ -94,6 +94,6 @@ page {
 .item_type{
   width: 50%;
   float: left;
-  font-size: 34rpx;
+  font-size: 24rpx;
   color:#666;
 }

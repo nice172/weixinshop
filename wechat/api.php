@@ -453,11 +453,15 @@ if ($act == 'quick'){
     $province = $province['region_name']?$province['region_name']:'';
     $city = $city['region_name']?$city['region_name']:'';
     $district = $district['region_name']?$district['region_name']:'';
+    $attr_desc = '';
+    if (isset($data['model'])){
+    	$attr_desc = '型号：'.$data['model'].'；铜厚：'.$data['tong'].'；板厚：'.$data['ban'].'；尺寸：'.$data['size'];
+    }
     $insertData = [
         'user_id' => $user_id,
-        'cate_name' => '',
-        'brand_name' => '',
-        'attr_desc' => '',
+        'cate_name' => isset($data['cate_name']) ? $data['cate_name'] : '',
+        'brand_name' => isset($data['brand_name']) ? $data['brand_name'] : '',
+    	'attr_desc' => $attr_desc,
         'realname' => $data['username'],
         'mobile' => $data['phone'],
         'address' => $province.$city.$district.$data['address'],
@@ -665,7 +669,34 @@ if ($act == 'hot') {
         'mobile' => $_POST['mobile']
     ));
     exit();
-} /* 注册会员的处理 */
+}elseif ($act == 'findpwd'){
+	$data = post();
+	if (empty($data['username'])) ajaxReturn(['code' => 0,'msg' => '请输入手机号']);
+	if (empty($data['verfy_code'])) ajaxReturn(['code' => 0,'msg' => '请输入验证码']);
+	if (empty($data['password'])) ajaxReturn(['code' => 0,'msg' => '请输入新密码']);
+	if ($data['confirm_password'] != $data['password']) ajaxReturn(['code' => 0,'msg' => '再次密码不一致']);
+	$reg_m_code = $_SESSION['reg_m_code'];
+	if ($data['verfy_code'] != $reg_m_code) {
+		ajaxReturn(['code' => 0,'msg' => '验证码不正确']);
+	}
+	if (strlen($data['password']) < 6) {
+		ajaxReturn(['code' => 0,'msg' => '密码长度不能小于6位']);
+	}
+	if (strpos($data['password'], ' ') > 0) {
+		ajaxReturn(['code' => 0,'msg' => $_LANG['passwd_balnk']]);
+	}
+	unset($_SESSION['reg_m_code']);
+	$find = $db->getRow("select * from {$ecs->table('users')} where user_name='{$data['username']}'");
+	if (!empty($find)){
+		ajaxReturn(['code' => 0,'msg' => '修改失败']);
+	}
+	$db->autoExecute($ecs->table('users'), ['ec_salt' => '','salt' => 0,'password' => md5($data['password'])],'UPDATE',"user_id='{$find['user_id']}'");
+	if ($db->affected_rows()){
+		ajaxReturn(['code' => 1,'msg' => '修改成功']);
+	}
+	ajaxReturn(['code' => 0,'msg' => '修改失败']);
+}
+/* 注册会员的处理 */
 else if ($act == 'act_register') {
     /* 增加是否关闭注册 */
     if ($_CFG['shop_reg_closed']) {
