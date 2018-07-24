@@ -1,5 +1,7 @@
 // pages/item/item.js
 var http = require('../../request');
+var WxParse = require('../../wxParse/wxParse.js');
+
 Page({
 
   /**
@@ -8,9 +10,11 @@ Page({
   data: {
       current:0,
       isDetail:"tabs_item_on",
+      shippingText:'',
       isBuyRecord:"",
       id:0,
       title:"未获取",
+      goods: {},
       loadimg:"/images/defaultpic.jpeg",
       imgs:null,
       price:"未获取",
@@ -123,13 +127,28 @@ Page({
           var obj = specification[key]
           prarm[obj.name] = obj.value
         }
+        if (res.data.goods.is_shipping==1){
+          var shippingText = '包邮';
+        }else{
+          var shippingText = '买家承担运费';
+        }
         page.setData({
+          shippingText: shippingText,
           prarm: prarm,
+          goods: res.data.goods,
           loadimg: app.config.ImageRoot + res.data.goods.goods_img
         });
-
+        var article = '<p style="text-align:left;color:#999999;">暂无商品详情</p>';
+        if (res.data.goods.goods_desc != ''){
+          var article = res.data.goods.goods_desc;
+        }
+        WxParse.wxParse('article', 'html', article, page, 5);
       }
-    })
+    });
+
+    //var that = this;
+    //WxParse.wxParse('article', 'html', article, that, 5);
+
   },
   TabsChangeD:function(e){
     this.setData({

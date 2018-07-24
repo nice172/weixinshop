@@ -29,14 +29,20 @@
 
 .parchase_head_name {
   width: 390rpx;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
 .parchase_head_detail {
-  width: 80rpx;
+  width: 80px;
+  text-align: center;
 }
+.a{color: #3a5fcd;}
 
 .parchase_head_num {
-  widows: 80rpx;
+  width: 80px;
+  text-align: center;
 }
 
 .parchase_btns {

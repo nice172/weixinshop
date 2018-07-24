@@ -1,8 +1,5 @@
 <!--pages/My.mod/ShoppingCart/ShoppingCart.wxml-->
-<!--view class="Head">
-  <text>编辑</text>
-</view-->
-<view>
+<view wx:if="{{carts.length > 0}}">
   <block wx:for="{{carts}}" wx:key="*this">
     <view class="Cell">
       <view class="Shop_head"> <view data-index='{{index}}' bindtap='AddBuyCartItem'>
@@ -44,7 +41,13 @@
   <view class="ShowPriceTitle">
     <view>合计:
       <text class="showprice_text">{{allPrice}}元</text>
+      <text style="font-size:12px;">不含运费</text>
     </view>
-    <view>不含运费</view>
+    <view style="font-size:13px;">运费:{{shipping_free}}元</view>
   </view>
+</view>
+
+<view wx:if="{{carts.length<=0}}">
+<view style="margin: 20px auto 20px auto;text-align:center;">购物车没有任何商品！</view>
+<button class="RedBtn" type="warn" bindtap='goBtn' style="width:80%;">先去平台逛逛</button>
 </view>

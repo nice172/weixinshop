@@ -1,10 +1,14 @@
 /* pages/item/item.wxss */
-
+@import "/wxParse/wxParse.wxss";
 .head_image_view, .head_img {
   height: 460rpx;
   width: 750rpx;
 }
-
+.baoyou {
+  font-size: 30rpx;
+  margin-left: 50rpx;
+  color: #888;
+}
 .Thead_title {
   margin: 8rpx;
   font-weight: 900;

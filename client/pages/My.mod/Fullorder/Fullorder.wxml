@@ -53,7 +53,7 @@
             <view class="order_pic">
               <image class="order_itempic" src="{{oditem.img}}"></image>
             </view>
-            <view>
+            <view class="order_title">
             <view class='order_item_name'>{{oditem.goods_name}}</view>
             <view class='order_item_moneys'>
               <view>￥{{oditem.goods_price}}</view>

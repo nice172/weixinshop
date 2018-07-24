@@ -1,4 +1,5 @@
 // pages/My.mod/MyReferrals/MyReferrals.js
+var http = require('../../../request.js');
 Page({
 
   /**
@@ -6,24 +7,9 @@ Page({
    */
   data: {
     choseclass: 0,
-    Lvonenum: 10,
-    Lvtwonum: 2,
-    list:[
-      {
-        icon:"/cache/head.png",
-        name:"石头",
-        time:"2018-06-08 13:50",
-        monetary:"1000",
-        Order:"10"
-      },
-      {
-        icon: "/cache/head.png",
-        name: "石头",
-        time: "2018-06-08 13:50",
-        monetary: "131021",
-        Order: "102413"
-      }
-    ]
+    Lvonenum: 0,
+    Lvtwonum: 0,
+    list:[]
   },
 
   /**
@@ -36,11 +22,11 @@ Page({
     }
     this.setData({
       choseclass: index
-    })
+    });
+    this.refresh_list();
   },
   ChangeClass: function (e) {
-    console.log(e)
-    var classtype = e.target.dataset.class
+    var classtype = e.target.dataset.class;
     this.setData({
       choseclass: classtype
     })
@@ -94,22 +80,34 @@ Page({
 
   },
   refresh_list: function () {
+    wx.showLoading({
+      title: '加载中...',
+      mask: true
+    });
+    setTimeout(() => {
+      wx.hideLoading();
+    },30000);
     var app = getApp()
-    var page = this;
+    var _this = this;
     //获取热门推荐
     http.send({
       url: app.config.ApiUrl, //仅为示例，并非真实的接口地址
       data: {
-        act: "account_log"
+        act: "friends"
       },
       header: {
         'content-type': 'application/json' // 默认值
       },
-      success: function (res) {
-        console.log(res)
-        page.setData({
-          purchases: res.data
-        })
+      success: function (response) {
+        wx.hideLoading();
+        var list = [];
+        list.push(response.data.userlist);
+        list.push(response.data.userlist2);
+        _this.setData({
+          Lvonenum: response.data.userlist.length,
+          Lvtwonum: response.data.userlist2.length,
+          list: list
+        });
       }
     })
   }

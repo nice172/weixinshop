@@ -37,12 +37,14 @@ $not_login_arr = array(
     "brand_list",
     'mingdanbrand',
     "get_cat_info",
-	'act_login',
     'test',
     'detail',
     'search',
     'quickcate',
-    'create'
+    'create',
+    'findpwd',
+    'cart_num',
+    'shipping'
 );
 
 /* 显示页面的action列表 */
@@ -68,7 +70,7 @@ $ui_arr = array(
     'getpurchase',
     'recharge',
     'mingdansend',
-    'mingdanlist',
+    'mingdanlist','friends',
     'deletemingdan','isapply','update_goods',
     'address_list','order_pay','delete_goods',
     'confirm','cancelorder','refundgoods'
@@ -336,6 +338,32 @@ if ($act == 'mingdanlist'){
         'black' => $blackList]);
     return;
 }
+
+if ($act == 'friends'){
+    $userlist1 = $db->getAll("select user_id,user_name,reg_time from {$ecs->table('users')} where parent_id=$user_id order by user_id desc");
+    $userlist2 = [];
+    foreach ($userlist1 as $key => $value){
+        $userlist1[$key]['icon'] = '';
+        $userlist1[$key]['reg_time'] = date('Y-m-d H:i:s',$value['reg_time']);
+        $userlist1[$key]['monetary'] = 100;
+        $userlist1[$key]['order'] = 200;
+        $user_id = $value['user_id'];
+        $user2 = $db->getRow("select user_id,user_name,reg_time from {$ecs->table('users')} where parent_id=$user_id");
+        $user2['reg_time'] = date('Y-m-d H:i:s',$user2['reg_time']);
+        $user2['monetary'] = 100;
+        $user2['order'] = 200;
+        $user2['icon'] = '';
+        $userlist2[] = $user2;
+    }
+    
+    ajaxReturn(['code' => 1,
+        'userlist' => $userlist1,
+        'userlist2' => $userlist2
+        ]
+    );
+    return;
+}
+
 if ($act == 'mingdansend'){
     $data = post();
     if (empty($data) || !is_array($data)) ajaxReturn(['code' => 0,'msg' => '提交失败']);
@@ -382,11 +410,30 @@ if ($act == 'updateuser'){
 
 if ($act == 'payment'){
  
+    $goodsIdArray = explode(',', $_POST['goodsids']);
+    
+    if (empty($goodsIdArray)) ajaxReturn(['code' => 0,'msg' => '请至少选择一个商品']);
+    
+    $count_type = 'payment';
+    
     $wxResult = getOpenId();
 
     include 'order.php';
         
     return;
+}
+
+if ($act == 'shipping'){
+    $data = post();
+    if (empty($data['goodsid'])){
+        ajaxReturn(['code' => 0,'shipping_free' => '0.00']);
+    }
+    $count_type = 'shipping';
+    $shipping_free = '';
+    $goodsIdArray = $data['goodsid'];
+    $order = include 'order.php';
+    ajaxReturn(['code' => 1,'order' => $order]);
+    
 }
 
 if ($act == 'order_pay'){
@@ -564,8 +611,12 @@ if ($act == 'test'){
 
 if ($act == 'hot') {
     // 热门商品
-    $jsontext = get_recommend_goods('hot');
-    echo $json->encode($jsontext);
+//     $jsontext = get_recommend_goods('hot');
+
+    $hot = $db->getAll("select goods_id as id,promote_price,cat_id,goods_name as name,market_price,shop_price,goods_thumb as thumb,goods_img from {$ecs->table('goods')} where is_hot=1 and is_on_sale=1 and is_delete=0 order by goods_id asc");
+
+    ajaxReturn($hot);
+    
 } else if ($act == 'orders_list') {
     // 热点滚动列表
     $sql = "select oi.order_amount,oi.consignee, oi.province, oi.city, oi.district, oi.order_status, oi.shipping_status, oi.pay_status, oi.add_time, og.goods_id, og.goods_name, og.goods_number  from " . $ecs->table('order_info') . " oi INNER JOIN " . $ecs->table('order_goods') . "  og ON oi.order_id = og.order_id ORDER BY oi.order_id desc LIMIT 8";
@@ -606,8 +657,15 @@ if ($act == 'hot') {
     $ban_categories = get_child_tree('695');
     $part_categories = get_child_tree('696');
 } else if ($act == 'purchase') {
+    
+    $page = isset($_GET['page']) && intval($_GET['page']) > 0 ? intval($_GET['page']) : 1;
+    $page_size = 20;
+    $count = $db->getOne("select count(*) as count from {$ecs->table('user_purchase')} where verify_status=1 and status=1");
+    $totalPage = ceil($count / $page_size);
+    $limit = ($page - 1) * $page_size . ','. $page_size;
+    
     //紧急采购
-    $sql = "select * from " . $ecs->table('user_purchase') . "  where  verify_status = 1 and status =1 ORDER BY purchase_id desc LIMIT 20";
+    $sql = "select * from " . $ecs->table('user_purchase') . "  where  verify_status = 1 and status=1 ORDER BY purchase_id desc LIMIT $limit";
     $purchase_list = $db->getAll($sql);
     foreach ($purchase_list as $key => $val) {
         $purchase_list[$key]['mem_addr'] = '';
@@ -619,7 +677,7 @@ if ($act == 'hot') {
         }
         $purchase_list[$key]['mem_addr'] = $city['region_name'] . $district['region_name'];
     }
-    echo $json->encode($purchase_list);
+    ajaxReturn(['list' => $purchase_list,'totalPage' => $totalPage]);
 }elseif ($act == 'detail') {
     $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
     if ($id <= 0) ajaxReturn(['code' => 0,'msg' => '获取数据失败']);
@@ -687,7 +745,7 @@ if ($act == 'hot') {
 	}
 	unset($_SESSION['reg_m_code']);
 	$find = $db->getRow("select * from {$ecs->table('users')} where user_name='{$data['username']}'");
-	if (!empty($find)){
+	if (empty($find)){
 		ajaxReturn(['code' => 0,'msg' => '修改失败']);
 	}
 	$db->autoExecute($ecs->table('users'), ['ec_salt' => '','salt' => 0,'password' => md5($data['password'])],'UPDATE',"user_id='{$find['user_id']}'");
@@ -702,7 +760,7 @@ else if ($act == 'act_register') {
     if ($_CFG['shop_reg_closed']) {
         $smarty->assign('action', 'register');
         $smarty->assign('shop_reg_closed', $_CFG['shop_reg_closed']);
-        echo json_encode($smarty);
+        echo json_encode($smarty,'','','error');
         exit();
     } else {
         include_once (ROOT_PATH . 'includes/lib_passport.php');
@@ -716,30 +774,31 @@ else if ($act == 'act_register') {
         $other['home_phone'] = isset($_POST['extend_field4']) ? $_POST['extend_field4'] : '';
         $other['mobile_phone'] = isset($_POST['extend_field5']) ? $_POST['extend_field5'] : '';
         $other['verfy_code'] = isset($_POST['verfy_code']) ? $_POST['verfy_code'] : '';
+        $other['parent_id'] = isset($_POST['parent_id']) ? intval($_POST['parent_id']) : 0;
         $sel_question = empty($_POST['sel_question']) ? '' : compile_str($_POST['sel_question']);
         $passwd_answer = isset($_POST['passwd_answer']) ? compile_str(trim($_POST['passwd_answer'])) : '';
         
         $back_act = isset($_POST['back_act']) ? trim($_POST['back_act']) : '';
         
         if (empty($_POST['agreement'])) {
-            show_json_message($_LANG['passport_js']['agreement']);
+            show_json_message($_LANG['passport_js']['agreement'],'','','error');
         }
         if (strlen($username) < 3) {
-            show_json_message($_LANG['passport_js']['username_shorter']);
+            show_json_message($_LANG['passport_js']['username_shorter'],'','','error');
         }
         
         if (strlen($password) < 6) {
-            show_json_message($_LANG['passport_js']['password_shorter']);
+            show_json_message($_LANG['passport_js']['password_shorter'],'','','error');
         }
         
         if (strpos($password, ' ') > 0) {
-            show_json_message($_LANG['passwd_balnk']);
+            show_json_message($_LANG['passwd_balnk'],'','','error');
         }
         
         if ($username) {
             $reg_m_code = $_SESSION['reg_m_code'];
             if ($other['verfy_code'] != $reg_m_code) {
-                show_json_message('验证码不正确');
+                show_json_message('验证码不正确','','','error');
             }
         }
         /* 验证码检查 */
@@ -761,6 +820,8 @@ else if ($act == 'act_register') {
             /* 把新注册用户的扩展信息插入数据库 */
             $sql = 'SELECT id FROM ' . $ecs->table('reg_fields') . ' WHERE type = 0 AND display = 1 ORDER BY dis_order, id'; // 读出所有自定义扩展字段的id
             $fields_arr = $db->getAll($sql);
+            
+            $db->autoExecute($ecs->table('users'), ['parent_id' => $other['parent_id']],'UPDATE','user_id='.$_SESSION['user_id']);
             
             $extend_field_str = ''; // 生成扩展字段的内容字符串
             foreach ($fields_arr as $val) {
@@ -789,14 +850,13 @@ else if ($act == 'act_register') {
             }
             $ucdata = empty($user->ucdata) ? "" : $user->ucdata;
             show_json_message(sprintf($_LANG['register_success'], $username . $ucdata), array(
-                $_LANG['back_up_page'],
-                $_LANG['profile_lnk']
+                'user_id' => $_SESSION['user_id']
             ), array(
                 $back_act,
                 'user.php'
             ), 'info');
         } else {
-            $err->show($_LANG['sign_up'], 'user.php?act=register');
+           show_json_message('注册失败','','','error');
         }
     }
     exit();
@@ -827,8 +887,9 @@ else if ($act == 'act_register') {
         
         $ucdata = isset($user->ucdata) ? $user->ucdata : '';
         show_json_message($_LANG['login_success'] . $ucdata, array(
-            $_LANG['back_up_page'],
-            $_LANG['profile_lnk']
+//             $_LANG['back_up_page'],
+//             $_LANG['profile_lnk'],
+            'user_id' => $_SESSION['user_id']
         ), array(
             $back_act,
             'user.php'
@@ -838,7 +899,6 @@ else if ($act == 'act_register') {
         show_json_message($_LANG['login_failure'], $_LANG['relogin_lnk'], 'user.php', 'error');
     }
 } else if ($act == 'good') {
-    ;
     $goods_id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
     $goods = get_goods_info($goods_id);
     $properties = get_goods_properties($goods_id);
@@ -914,7 +974,7 @@ else if ($act == 'act_register') {
     ));
     exit();
 } else if ($act == 'add_to_cart') {
-    include_once ('includes/cls_json.php');
+    include_once ('../includes/cls_json.php');
     $_POST['goods'] = strip_tags(urldecode($_POST['goods']));
     $_POST['goods'] = json_str_iconv($_POST['goods']);
     
@@ -980,7 +1040,7 @@ else if ($act == 'act_register') {
     }
     
     /* 检查：商品数量是否合法 */
-    if (! is_numeric($goods->number) || intval($goods->number) == 0) {
+    if (!is_numeric($goods->number) || intval($goods->number) == 0) {
         $result['error'] = 1;
         $result['message'] = $_LANG['invalid_number'];
     } /* 更新：购物车 */
@@ -1014,6 +1074,42 @@ else if ($act == 'act_register') {
     
     $result['confirm_type'] = ! empty($_CFG['cart_confirm']) ? $_CFG['cart_confirm'] : 2;
     die($json->encode($result));
+}
+elseif ($act == 'cart_num'){
+    $_POST['goods'] = str_replace('\\', '', $_POST['goods']);
+    $type = isset($_GET['type']) ? trim($_GET['type']) : '';
+    $data = json_decode($_POST['goods'],true);
+    if (empty($data)){
+        ajaxReturn(['code' => 0,'msg' => '更新数量失败']);
+    }
+    $goods_id = $data['goods_id'];
+    $number = intval($data['number']);
+    $sessid = SESS_ID;
+
+    $row = $db->getRow("select * from {$ecs->table('cart')} where session_id='{$sessid}' and goods_id='{$goods_id}'");
+    if (!empty($row)){
+        
+        if (empty($type)){
+        if ($number == '-1' && $row['goods_number'] > 1){
+            $new_number = $row['goods_number'] - 1;
+        }elseif ($number == 1){
+            $new_number = $row['goods_number'] + 1;
+        }elseif ($number > 1){
+            $new_number = $number;
+        }else{
+            $new_number = 1;
+        }
+        }else{
+            $new_number = $number;
+        }
+        
+        $goodsInfo = $db->getRow("select * from {$ecs->table('goods')} where goods_id='{$goods_id}'");
+        if ($goodsInfo['goods_number'] < $new_number){
+            ajaxReturn(['code' => -1,'num' => $row['goods_number'],'msg' => '超出商品库存量']);   
+        }
+        $db->autoExecute($ecs->table('cart'), ['goods_number' => $new_number],'UPDATE',"session_id='{$sessid}' and goods_id='{$goods_id}'");
+        ajaxReturn(['code' => 1,'num' => $new_number,'msg' => '更新数量成功']);  
+    }
 } else if ($act == "user_info") {
     $user_id = $_SESSION['user_id'];
     $result = array();
@@ -1194,8 +1290,7 @@ else if($act == 'stock_list'){
     $suppliers = $db->getRow($sql);
     $suppliers_id = $suppliers['suppliers_id'];
     if (!$suppliers_id){
-        echo  json_encode(array(error => "无店铺suppliers_id"));
-        exit;
+        ajaxReturn(['code' => 0,'msg' => '暂无开通店铺']);
     }
    $page = isset($_GET['page']) && intval($_GET['page']) > 0 ? intval($_GET['page']) : 1;
    $page_size = 20;

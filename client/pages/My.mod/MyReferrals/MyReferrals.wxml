@@ -11,18 +11,18 @@
   </scroll-view>
 </view>
 <view class="AllReferrals">
-  <block wx:for="{{list}}" wx:key="*this">
+  <block wx:for="{{list[choseclass]}}" wx:key="*this">
     <view class="ref_view">
       <view>
-        <image class="ref_icon" src='{{item.icon}}'></image>
+        <image class="ref_icon" src="{{item.icon != '' ? item.icon : '/images/user.png'}}"></image>
       </view>
       <view class="ref_center">
-        <view class="ref_name">{{item.name}}</view>
-        <view class="ref_time">注册日期:{{item.time}}</view>
+        <view class="ref_name">{{item.user_name}}</view>
+        <view class="ref_time">注册日期:{{item.reg_time}}</view>
       </view>
       <view>
         <view class="ref_monetray">消费:{{item.monetary}}元</view>
-        <view class="ref_order">{{item.Order}}个订单</view>
+        <view class="ref_order">{{item.order}}个订单</view>
       </view>
     </view>
 

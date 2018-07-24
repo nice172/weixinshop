@@ -88,12 +88,18 @@ Page({
       })
       return;
     }
+    var parent_id = wx.getStorageSync('parent_id');
+    if(parent_id == ''){
+        parent_id = 0;
+    }
+    
     http.send({
       url: app.config.ApiUrl +"?act=act_register" ,
       data: {
         username:this.data.phone,
         verfy_code: this.data.verfy_code,
         password: this.data.password ,
+        parent_id: parent_id,
         email:"",
         confirm_password: this.data.repassword,
         agreement:1,
@@ -106,10 +112,13 @@ Page({
         "content-type": "application/x-www-form-urlencoded"
       },
       success: function (res) {
-        console.log(res)
+        if(res.data.type == 'info'){
+          wx.removeStorageSync('parent_id');
+          wx.setStorageSync('parent_id', res.data.links['user_id']);
+        }
         wx.showToast({
           title: res.data.content,
-          icon: 'success',
+          icon: 'none',
           duration: 2000
         })
       }

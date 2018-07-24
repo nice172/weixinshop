@@ -15,7 +15,7 @@
     <view class="parchase_head_map goods_name"  style="width:40%;">{{item.goods_name}}</view>
     <view class="parchase_head_name"  style="width:12%;padding:0 5px;">{{item.shop_price=='0.01' ? '议价': item.shop_price}}</view>
     <view class="parchase_head_num"  style="width:13%;padding:0 5px;">{{item.goods_number}}件</view>
-    <view class="parchase_head_detail" style="width:35%;padding:0 5px;">{{item.suppliers_id}}<text bindtap='detail' data-title="{{item.goods_name}}" data-price="{{item.shop_price}}" data-img="{{item.goods_img}}" data-goods_id="{{item.goods_id}}" style="background:#3a5fcd;padding:2px 3px;color:#fff;">详情</text></view>
+    <view class="parchase_head_detail" style="width:35%;padding:0 5px;">{{item.suppliers_id}}<text bindtap='detail' data-title="{{item.goods_name}}" data-price="{{item.shop_price}}" data-img="{{item.goods_img}}" data-goods_id="{{item.goods_id}}" style="margin-left:10rpx;background:#3a5fcd;padding:2px 3px;color:#fff;">详情</text></view>
   </view>
 
 <view class="parchase_btns">

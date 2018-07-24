@@ -40,10 +40,7 @@ try{
     $input->SetOpenid($openId);
     $config = new WxPayConfig();
     $order = WxPayApi::unifiedOrder($config, $input);
-    //$timeStamp = time();
-    //$order['timeStamp'] = "$timeStamp";
-    //$paySign = md5('appId='.$config->GetAppId().'&nonceStr='.$order['nonce_str'].'&package=prepay_id='.$order['prepay_id'].'&signType=MD5&timeStamp='.$timeStamp.'&key='.$config->GetKey());
-    //$order['paySign'] = $paySign;
+
     $jsApiParameters = $tools->GetJsApiParameters($order);
     exit(json_encode(['code' => 1,'order' => json_decode($jsApiParameters,true)]));
 //     //获取共享收货地址js函数参数

@@ -130,6 +130,18 @@ Page({
                 msg: res.data.msg
               });
           }
+          if (res.data.code == '20001') {
+            wx.showToast({
+              title: '请先登录用户',
+              icon: 'none'
+            });
+            setTimeout(() => {
+              wx.redirectTo({
+                url: '../../Login/Login'
+              });
+            }, 1500);
+            return;
+          }
         }
       });
   },

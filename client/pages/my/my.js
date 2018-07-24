@@ -46,6 +46,7 @@ Page({
           app.globalUserInfo = true;
           var avatarUrl = page.data.user.avatarUrl;
           var user = res.data["info"];
+          wx.setStorageSync('parent_id', user['gender']);
           user['avatarUrl'] = avatarUrl;
           page.setData({
             isLogin:true,

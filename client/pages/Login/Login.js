@@ -54,13 +54,15 @@ Page({
         "content-type": "application/x-www-form-urlencoded"
       },
       success: function (res) {
-        console.log(res)
         wx.showToast({
           title: res.data.content,
           icon: 'none',
           duration: 2000
-        })
+        });
         if (res.data.type == "info"){
+          if (res.data.links['user_id']){
+            wx.setStorageSync('parent_id', res.data.links['user_id']);
+          }
           app.globalUserInfo = true;
           wx.navigateBack();
         }

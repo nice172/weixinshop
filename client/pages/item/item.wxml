@@ -20,6 +20,13 @@
     <view class="Thead_title">{{title}}</view>
     <view class="Thead_price">￥ {{price}}</view>
   </view>
+
+  <view class="params">
+  
+  <view class="baoyou">快递：{{shippingText}}　　　库存：{{goods.goods_number}}</view>
+  
+  </view>
+
   <view class="Param">
     <!--商品参数-->
     <view class="Param_item" wx:for="{{prarm}}" wx:for-index="name" wx:key="*this">
@@ -38,7 +45,9 @@
     <swiper bindchange="setTabsChange" current="{{current}}">
       <swiper-item>
         <!--商品详情-->
-        <text style='text-align:center;color:#999999'>暂无商品详情</text>
+        <import src="/wxParse/wxParse.wxml"/>
+        <!-- <text style='text-align:center;color:#999999'>暂无商品详情</text> -->
+        <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
       </swiper-item>
       <swiper-item>
         <!--订购记录-->

@@ -116,10 +116,7 @@ if($order['inv_payee']){
     }
     $smarty->assign('ticket_list', $ticket_list);
 }
-// print_r($ticket_info);
-// print_r($province);
-// print_r($order['inv_payee']);
-// exit;
+
 /* 扩展信息 */
 if (isset($_SESSION['flow_type']) && intval($_SESSION['flow_type']) != CART_GENERAL_GOODS)
 {
@@ -193,8 +190,19 @@ elseif (isset($_POST['bonus_sn']))
 /* 订单中的商品 */
 $cart_goods = cart_goods($flow_type);
 
-if (empty($cart_goods))
-{
+if (!empty($cart_goods)) {
+    $new_cart_goods = [];
+    $new_in_goods_id = [];
+    foreach ($cart_goods as $key => $value){
+        if (in_array($value['goods_id'], $goodsIdArray)){
+            $new_cart_goods[] = $value;
+            $new_in_goods_id[] = $value['goods_id'];
+        }
+    }
+    $cart_goods = $new_cart_goods;
+}
+
+if (empty($cart_goods)){
     ajaxReturn(['code' => 0,'msg' => $_LANG['no_goods_in_cart']]);
 }
 
@@ -301,6 +309,12 @@ if ($payment['pay_code'] == 'balance' && $order['order_amount'] > 0)
     }
 }
 
+if ($count_type == 'shipping'){
+    return $order;
+    exit;
+}
+
+
 /* 如果订单金额为0（使用余额或积分或红包支付），修改订单状态为已确认、已付款 */
 if ($order['order_amount'] <= 0)
 {
@@ -311,13 +325,10 @@ if ($order['order_amount'] <= 0)
     $order['order_amount'] = 0;
 }
 
-// print_r($order['order_amount']);
-// print_r($order['quick_ship_fee']);
-// exit;
-// $order['order_amount'] += $order['quick_ship_fee'];
-if($order['order_amount'] < 100){
-    $order['order_amount'] = sprintf("%.2f", "100.00");
-}
+// if($order['order_amount'] < 100){
+//     $order['order_amount'] = sprintf("%.2f", "100.00");
+// }
+
 $total['amount_formated'] = "￥".sprintf("%.2f", $order['order_amount'])."元";
 
 $order['integral_money']   = $total['integral_money'];
@@ -384,11 +395,12 @@ while ($error_no == 1062); //如果是订单号重复则重新提交数据
 $new_order_id = $db->insert_id();
 $order['order_id'] = $new_order_id;
 
+$in_goodsId = implode(',', $new_in_goods_id);
 /* 插入订单商品 */
 $sql = "SELECT '$new_order_id', goods_id, goods_name, goods_sn, product_id, goods_number, market_price, ".
     "goods_price, goods_attr, is_real, extension_code, parent_id, is_gift, goods_attr_id".
     " FROM " .$ecs->table('cart') .
-    " WHERE session_id = '".SESS_ID."' AND rec_type = '$flow_type'";
+    " WHERE session_id = '".SESS_ID."' AND rec_type = '$flow_type' AND goods_id in($in_goodsId)";
 $res = $GLOBALS['db']->getAll($sql);
 if($res){
     foreach ($res as $val) {
@@ -525,7 +537,11 @@ if ($order['order_amount'] <= 0)
 }
 
 /* 清空购物车 */
-clear_cart($flow_type);
+//clear_cart($flow_type);
+$type_cart = CART_GENERAL_GOODS;
+$sql = "DELETE FROM " . $GLOBALS['ecs']->table('cart') .
+" WHERE session_id = '" . SESS_ID . "' AND rec_type = '$type_cart' AND goods_id in($in_goodsId)";
+$GLOBALS['db']->query($sql);
 /* 清除缓存，否则买了商品，但是前台页面读取缓存，商品数量不减少 */
 clear_all_files();
 

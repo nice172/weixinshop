@@ -92,12 +92,18 @@ Page({
         "content-type": "application/x-www-form-urlencoded"
       },
       success: function (res) {
-        console.log(res)
         wx.showToast({
-          title: res.data.content,
+          title: res.data.msg,
           icon: 'success',
           duration: 2000
-        })
+        });
+        if(res.data.code == 1){
+          setTimeout(function(){
+            wx.navigateBack({
+              delta: 1,
+            });
+          },2000);
+        }
       }
     })
   },

@@ -4,6 +4,7 @@ page {
   background: #f6f6f6;
 }
 
+
 .head_view {
   margin-top: 10rpx;
   width: 750rpx;
@@ -121,7 +122,14 @@ page {
 .recom_item_title{
   font-size: 30rpx;
   font-weight: 800;
-
+  height: 80rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* white-space: nowrap; */
+  display: -webkit-box;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp:2;
 }
 .recom_item_price{
   color: #ff4040;

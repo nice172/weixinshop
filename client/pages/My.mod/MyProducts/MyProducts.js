@@ -103,7 +103,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    this.refresh_list();
+    this.refresh_list(1);
   },
 
   /**
@@ -146,7 +146,9 @@ Page({
    */
   onReachBottom: function () {
     console.log('loading');
-    this.refresh_list();
+    var page = this.data.page + 1;
+    if (page > this.data.totalPage) return;
+    this.refresh_list(page);
   },
 
   /**
@@ -204,7 +206,7 @@ Page({
     })
   },
 
-  refresh_list: function () {
+  refresh_list: function (page) {
     wx.showLoading({
       title: '加载中...',
       mask: true,
@@ -213,9 +215,7 @@ Page({
       complete: function (res) { },
     });
     setTimeout(() => { wx.hideLoading(); }, 30000);
-    var page = this.data.page+1;
-    if(page > this.totalPage) return;
-    var app = getApp()
+    var app = getApp();
     var _this = this;
     //获取热门推荐
     http.send({
@@ -241,6 +241,33 @@ Page({
           }, 1000);
           return;
         }
+        if (res.data.count == 0) {
+          wx.showToast({
+            title: '没有任何商品',
+            icon: 'none'
+          });
+          setTimeout(() => {
+            wx.navigateBack({
+              delta: 1,
+            });
+          }, 1500);
+          return;
+        }
+        if(res.data.code == 0){
+          wx.showToast({
+            title: res.data.msg,
+            icon: 'none'
+          });
+          setTimeout(() => {
+            wx.navigateBack({
+              delta: 1,
+            });
+          },1500);
+          return;
+        }
+        _this.setData({
+          totalPage: res.data.totalPage
+        });
         if(page <= 1){
           _this.setData({
             page: page,

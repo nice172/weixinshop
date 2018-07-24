@@ -9,11 +9,11 @@ Page({
     allPrice: "0.00",
     num: 0,
     isChoseAll: false,
-    carts: []
+    carts: [],
+    shipping_free:'0.00'
   },
 
   payment: function(e){
-    //18223537801
     if (this.data.carts.length <= 0){
       wx.showToast({
         title: '您的购物车中没商品！',
@@ -24,6 +24,24 @@ Page({
         complete: function(res) {},
       });
       return;
+    }
+
+    var selectArr = [];
+    for (var i in this.data.carts){
+      var items = this.data.carts[i].items;
+        for(var j in items){
+          if (items[j]['isBuy']){
+              selectArr.push(items[j]['goods_id']);
+          }
+        }
+    }
+    if(selectArr.length <= 0){
+        wx.showToast({
+          title: '请至少选择一个商品',
+          icon: 'none',
+          mask: true
+        });
+        return;
     }
     wx.showLoading({
       title: '正在提交订单中',
@@ -67,7 +85,9 @@ Page({
               if (res.code) {
                 http.send({
                   url: app.config.ApiUrl + '?act=payment&code=' + res.code,
-                  data: {},
+                  data: {
+                    goodsids: selectArr
+                  },
                   method: 'POST',
                   header: {
                     "content-type": "application/x-www-form-urlencoded"
@@ -137,10 +157,10 @@ Page({
                         icon: 'none'
                       });
                       setTimeout(() => {
-                        wx.navigateTo({
+                        wx.redirectTo({
                           url: '../../Login/Login',
-                        })
-                      }, 1000);
+                        });
+                      }, 1500);
 
                     } else {
                       wx.showToast({
@@ -176,17 +196,16 @@ Page({
       num = 1;
     }
     var onnum = num;
-    console.log(e)
     var id = e.target.dataset.id;
     for (var name in page.data.carts) {
       var itemarg = page.data.carts[name].items;
       for (var index in itemarg) {
         var item = itemarg[index]
         if (item.goods_id == id) {
-          var num = num -item.goods_number;
+          //var num = num -item.goods_number;
           var goods = JSON.stringify({ "quick": 1, "spec": [], "goods_id": id, "number": num, "parent": 0 })
           http.send({
-            url: app.config.ApiUrl + '?act=add_to_cart',
+            url: app.config.ApiUrl + '?act=cart_num&type=edit',
             data: {
               goods: goods
             },
@@ -195,22 +214,57 @@ Page({
               "content-type": "application/x-www-form-urlencoded"
             },
             success: function (res) {
-              if (res.data.error == 0) {
+              if (res.data.code == '20001'){
+                wx.showToast({
+                  title: '请先登录用户',
+                  icon: 'none'
+                });
+                setTimeout(() => {
+                  wx.redirectTo({
+                    url: '../../Login/Login',
+                  });
+                }, 1500);
+                return;
+              }
+              if (res.data.code == 0 || res.data.code == '-1'){
+                wx.showToast({
+                  title: res.data.msg,
+                  icon: 'none',
+                  mask: true
+                });
+                if (res.data.code == '-1'){
+                  var num = res.data.num;
+                  for (var name in page.data.carts) {
+                    var itemarg = page.data.carts[name].items;
+                    for (var index in itemarg) {
+                      var item = itemarg[index]
+                      if (item.goods_id == id) {
+                        item.goods_number = num;
+                        page.setData({
+                          carts: page.data.carts
+                        });
+                        page.refreshAll();
+                      }
+                    }
+                  }
+                }
+                return;
+              }
+              //if (res.data.error == 0) {
                 for (var name in page.data.carts) {
                   var itemarg = page.data.carts[name].items;
                   for (var index in itemarg) {
                     var item = itemarg[index]
                     if (item.goods_id == id) {
-                      item.goods_number = onnum;
-                      console.log(item)
+                      item.goods_number = res.data.num;
                       page.setData({
                         carts: page.data.carts
-                      })
+                      });
+                      page.refreshAll();
                     }
-
                   }
                 }
-              }
+              //}
             }
           })
         }
@@ -232,8 +286,6 @@ Page({
     this.refreshAll();
   },
   AddBuyCartItem:function(e){
-    console.log(e);
-    console.log(this.data.carts);
     var itemarg = this.data.carts[e.currentTarget.dataset.index].items;
     if (this.data.carts[e.currentTarget.dataset.index]["isChoseAll"] == null){
       this.data.carts[e.currentTarget.dataset.index]["isChoseAll"] = false;
@@ -248,14 +300,13 @@ Page({
     this.refreshAll();
   },
   ChangNum:function(e){
-    console.log(e)
     var num = e.target.dataset.num;
     var id = e.target.dataset.id;
-    var app = getApp()
+    var app = getApp();
     var page = this;
-    var goods = JSON.stringify({ "quick": 1, "spec": [], "goods_id": id, "number": num, "parent": 0 })
+    var goods = JSON.stringify({ "quick": 1, "spec": [], "goods_id": id, "number": num, "parent": 0 });
     http.send({
-      url: app.config.ApiUrl + '?act=add_to_cart',
+      url: app.config.ApiUrl + '?act=cart_num',
       data: {
         goods: goods
       },
@@ -264,21 +315,58 @@ Page({
         "content-type": "application/x-www-form-urlencoded"
       },
       success: function (res) {
-        console.log(res)
-        if (res.data.error == 0){
-          for (var name in page.data.carts){
-            var itemarg = page.data.carts[name].items;
-            for (var index in itemarg){
-              var item = itemarg[index]
-              if (item.goods_id == id){
-                item.goods_number = item.goods_number * 1 + num*1;
-                console.log(item)
-                page.setData({
-                  carts: page.data.carts
-                })
+        // if (res.data.error == 0){
+        // }
+        if (res.data.code == '20001') {
+          wx.showToast({
+            title: '请先登录用户',
+            icon: 'none'
+          });
+          setTimeout(() => {
+            
+            wx.redirectTo({
+              url: '../../Login/Login',
+            });
+          }, 1500);
+          return;
+        }
+        if (res.data.code == 0 || res.data.code == '-1') {
+          wx.showToast({
+            title: res.data.msg,
+            icon: 'none',
+            mask: true
+          });
+          if (res.data.code == '-1') {
+            var num = res.data.num;
+            for (var name in page.data.carts) {
+              var itemarg = page.data.carts[name].items;
+              for (var index in itemarg) {
+                var item = itemarg[index]
+                if (item.goods_id == id) {
+                  item.goods_number = num;
+                  page.setData({
+                    carts: page.data.carts
+                  });
+                  page.refreshAll();
+                }
               }
-             
             }
+          }
+          return;
+        }
+        //var num = e.target.dataset.num;
+        for (var name in page.data.carts) {
+          var itemarg = page.data.carts[name].items;
+          for (var index in itemarg) {
+            var item = itemarg[index]
+            if (item.goods_id == id) {
+              item.goods_number = res.data.num;
+              page.setData({
+                carts: page.data.carts
+              });
+              page.refreshAll();
+            }
+
           }
         }
       }
@@ -325,7 +413,6 @@ Page({
         page.setData({
           carts: prarmary
         })
-        console.log(goods_list)
         
       }
     })
@@ -334,8 +421,9 @@ Page({
     var num = 0;
     var price = 0;
     var isChoseAll = true;
+    var selectArr = [];
     for (var cartkey in this.data.carts) {
-      var cart = this.data.carts[cartkey]
+      var cart = this.data.carts[cartkey];
       var items = cart.items;
       var isItemchose = true;
       for (var itemkey in items) {
@@ -343,6 +431,7 @@ Page({
         if (cart_item["isBuy"] != null && cart_item["isBuy"]) {
           price = price + 1 * cart_item.goods_price * cart_item.goods_number;
           num++;
+          selectArr.push(cart_item.goods_id);
         }else{
           isChoseAll = false;
           isItemchose = false;
@@ -357,7 +446,31 @@ Page({
       carts:this.data.carts,
       isChoseAll: isChoseAll
     });
+
+    var app = getApp();
+    var _this = this;
+    http.send({
+      url: app.config.ApiUrl + '?act=shipping',
+      method: 'POST',
+      data: {
+        goodsid: selectArr
+      },
+      success: function (res) {
+        if (res.data.code == 1) {
+          _this.setData({
+            shipping_free: res.data.order.shipping_fee
+          });
+        }
+      }
+    });
   },
+
+  goBtn: function(){
+    wx.switchTab({
+      url: '../../shop/shop'
+    });
+  },
+
   AddBuyItem: function (e) {
     console.log(e.currentTarget.dataset)
     var shopcart = this.data.carts[e.currentTarget.dataset.index]

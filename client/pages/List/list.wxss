@@ -29,9 +29,7 @@
 }
 .goods_name{
   overflow:hidden;
-
 text-overflow:ellipsis;
-
 white-space:nowrap;
 }
 .recom_item {

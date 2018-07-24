@@ -26,15 +26,6 @@ Page({
     ]
   },
 
-  test: function(){
-    wx.navigateTo({
-      url: '../testpay/index',
-      success: function(res) {},
-      fail: function(res) {},
-      complete: function(res) {},
-    })
-  },
-
 
   OpenItem: function (event) {
     var data = event.currentTarget.dataset;
@@ -49,9 +40,16 @@ Page({
   onLoad: function (options) {
     var app = getApp()
     var page = this;
+    wx.showLoading({
+      title: '加载中...',
+      mask: true
+    });
+    setTimeout(() => {
+      wx.hideLoading();
+    }, 30000);
     this.setData({
       imageRoot: app.config.ImageRoot
-    })
+    });
     //获取热门推荐
     http.send({
       url: app.config.ApiUrl, //仅为示例，并非真实的接口地址
@@ -62,9 +60,10 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success: function (res) {
+        wx.hideLoading();
         page.setData({
           recom_items: res.data
-        })
+        });
       }
     })
     //获取滚动热点
@@ -92,6 +91,7 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success: function (res) {
+        wx.hideLoading();
         page.setData({
           detail_shop_brand: res.data[0],
           detail_shop_seller: res.data[1],
@@ -148,7 +148,25 @@ Page({
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
+  onShareAppMessage: function (res) {
+    if (res.from === 'button') {
+      // 来自页面内转发按钮
+      console.log(res.target);
+    }
+    wx.showShareMenu({
+      withShareTicket: true
+    });
+    var parent_id = wx.getStorageSync('parent_id');
+    if (parent_id == '') {
+      return {
+        title: '商城',
+        path: '/pages/shop/shop'
+      };
+    }else{
+      return {
+        title: '商城',
+        path: '/pages/shop/shop?userid=' + parent_id
+      };
+    }
   }
 })
