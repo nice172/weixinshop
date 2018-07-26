@@ -44,7 +44,9 @@ $not_login_arr = array(
     'create',
     'findpwd',
     'cart_num',
-    'shipping'
+    'shipping',
+    'item_num',
+    'logout'
 );
 
 /* 显示页面的action列表 */
@@ -98,24 +100,9 @@ if (empty($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 if ($act == 'create'){
-    
-//     $db->query("alter table ccl_users add wxuser varchar(255) not null default '' comment '微信号'");
-//     $db->query("alter table ccl_users add province varchar(255) not null default '' comment '省'");
-//     $db->query("alter table ccl_users add city varchar(255) not null default '' comment '市'");
-//     $db->query("alter table ccl_users add area varchar(255) not null default '' comment '区'");
-//     $db->query("CREATE TABLE `ccl_user_black` (
-//   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-//   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
-//   `brand_id` int(10) unsigned NOT NULL DEFAULT '0',
-//   `brand_name` varchar(255) NOT NULL DEFAULT '',
-//   `type` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0白名单，1黑名单',
-//   PRIMARY KEY (`id`)
-// ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8");
 
-    //print_r($db->fetchRow($db->query("show create table ccl_order_quick")));
     
-    
-    //$db->query("alter table ccl_order_quick add audio varchar(255) not null default '' comment '录音文件'");
+    //$db->query("alter table ccl_users add truename varchar(255) not null default '' comment '姓名'");
     return;
 }
 
@@ -143,6 +130,23 @@ function getOpenId(){
     $log = Log::Init($logHandler, 15);
     
     return $wxResult;
+}
+
+if ($act == 'logout'){
+    $sesid = SESS_ID;
+    $db->query("delete from {$ecs->table('sessions')} where sesskey='{$sesid}'");
+    $db->query("delete from {$ecs->table('sessions_data')} where sesskey='{$sesid}'");
+    session_unset();
+    session_destroy();
+    echo 1;
+    return;
+}
+
+if ($act == 'item_num'){
+    $rec_type = CART_GENERAL_GOODS;
+    $sql = "SELECT count(*) as count FROM " . $ecs->table('cart') . " " . " WHERE session_id = '" . SESS_ID . "' AND rec_type = '".$rec_type."'";
+    $res = $db->getRow($sql);
+    ajaxReturn(['cart_count' => $res['count']]);
 }
 
 if ($act == 'recharge'){
@@ -343,17 +347,47 @@ if ($act == 'friends'){
     $userlist1 = $db->getAll("select user_id,user_name,reg_time from {$ecs->table('users')} where parent_id=$user_id order by user_id desc");
     $userlist2 = [];
     foreach ($userlist1 as $key => $value){
+        if(mb_strlen($value['user_name']) >= 10){
+            $start = 3;
+            $end = 5;
+        }else{
+            $start = 3;
+            $end = 4;
+        }
+        $userlist1[$key]['user_name'] = str_replace(mb_substr($value['user_name'], $start,$end), '***', $value['user_name']);
         $userlist1[$key]['icon'] = '';
         $userlist1[$key]['reg_time'] = date('Y-m-d H:i:s',$value['reg_time']);
-        $userlist1[$key]['monetary'] = 100;
-        $userlist1[$key]['order'] = 200;
+        $where = 'user_id='.$value['user_id'].' and pay_status=2 and shipping_status=2 and order_status=5';
+        $sql = "SELECT SUM(order_amount) AS total_fee FROM " .$ecs->table('order_info') ." WHERE {$where}";
+        $total_fee = $db->getRow($sql);
+        $userlist1[$key]['monetary'] = $total_fee['total_fee'] ? $total_fee['total_fee'] : 0;
+        $sql = "SELECT count(*) as count FROM " .$ecs->table('order_info') ." WHERE {$where}";
+        $countOrder = $db->getRow($sql);
+        $userlist1[$key]['order'] = $countOrder['count'];
+        
         $user_id = $value['user_id'];
         $user2 = $db->getRow("select user_id,user_name,reg_time from {$ecs->table('users')} where parent_id=$user_id");
-        $user2['reg_time'] = date('Y-m-d H:i:s',$user2['reg_time']);
-        $user2['monetary'] = 100;
-        $user2['order'] = 200;
-        $user2['icon'] = '';
-        $userlist2[] = $user2;
+        
+        if (!empty($user2)){
+            if(mb_strlen($user2['user_name']) >= 10){
+                $start = 3;
+                $end = 5;
+            }else{
+                $start = 3;
+                $end = 4;
+            }
+            $user2['user_name'] = str_replace(mb_substr($user2['user_name'], $start,$end), '***', $user2['user_name']);
+	        $user2['reg_time'] = date('Y-m-d H:i:s',$user2['reg_time']);
+	        $where = 'user_id='.$user2['user_id'].' and pay_status=2 and shipping_status=2 and order_status=5';
+	        $sql = "SELECT SUM(order_amount) AS total_fee FROM " .$ecs->table('order_info') ." WHERE {$where}";
+	        $total_fee = $db->getRow($sql);
+	        $user2['monetary'] = $total_fee['total_fee'] ? $total_fee['total_fee']: 0;
+	        $sql = "SELECT count(*) as count FROM " .$ecs->table('order_info') ." WHERE {$where}";
+	        $countOrder = $db->getRow($sql);
+	        $user2['order'] = $countOrder['count'];
+	        $user2['icon'] = '';
+	        $userlist2[] = $user2;
+        }
     }
     
     ajaxReturn(['code' => 1,
@@ -395,13 +429,14 @@ if ($act == 'updateuser'){
     $data = post();
     if (empty($data) || !is_array($data)) ajaxReturn(['code' => 0, 'msg' => '修改失败']);
     if (!checkmobile($data['mobile_phone'])) ajaxReturn(['code' => 0,'msg' => '手机号不合法']);
-    $username = $db->getRow("select * from {$ecs->table('users')} where user_id!='{$user_id}' and user_name='{$data['user_name']}'");
+    $username = $db->getRow("select * from {$ecs->table('users')} where user_id!='{$user_id}' and truename='{$data['user_name']}'");
     if (!empty($username)) ajaxReturn(['code' => 0,'msg' => '用户名已存在']);
     $mobile = $db->getRow("select * from {$ecs->table('users')} where user_id!='{$user_id}' and mobile_phone='{$data['mobile_phone']}'");
     if (!empty($mobile)) ajaxReturn(['code' => 0,'msg' => '手机号已存在']);
     $wxuser = $db->getRow("select * from {$ecs->table('users')} where user_id!='{$user_id}' and wxuser='{$data['wxuser']}'");
     if (!empty($wxuser)) ajaxReturn(['code' => 0,'msg' => '微信号已存在']);
-    
+    $data['truename'] = $data['user_name'];
+    unset($data['user_name']);
     if($db->autoExecute($ecs->table("users"), $data, 'UPDATE', "user_id='{$user_id}'")){
         ajaxReturn(['code' => 1, 'msg' => '修改成功']);
     }
@@ -480,7 +515,8 @@ if ($act == 'userinfo'){
 	if (empty($userinfo)){
 		ajaxReturn(['code' => 0,'msg' => '获取用户信息失败']);
 	}
-	ajaxReturn(['code' => 1, 'userinfo' => $userinfo]);
+	$userinfo['user_name'] = $userinfo['truename'];
+	ajaxReturn(['code' => 1,'currentDate' => date('Y-m-d') ,'userinfo' => $userinfo]);
 	return;
 }
 
@@ -905,6 +941,30 @@ else if ($act == 'act_register') {
     $jsonlist = array();
     $jsonlist['specification'] = $properties['pro'];
     $jsonlist['goods'] = $goods;
+    
+    $rec_type = CART_GENERAL_GOODS;
+    $sql = "SELECT count(*) as count FROM " . $ecs->table('cart') . " " . " WHERE session_id = '" . SESS_ID . "' AND rec_type = '".$rec_type."'";
+    $res = $db->getRow($sql);
+    $jsonlist['cart_count'] = $res['count'];
+    
+    $sql = "select g.goods_number,g.goods_name,o.order_id,o.add_time,o.user_id,u.user_name from {$ecs->table('order_info')} o inner 
+join {$ecs->table('order_goods')} g on o.order_id=g.order_id inner 
+join {$ecs->table('users')} u on o.user_id=u.user_id where goods_id='{$goods_id}' and o.pay_status=2 and o.shipping_status=2 and o.order_status=5";
+    $recordList = $db->getAll($sql);
+    foreach ($recordList as $key => $value){
+        $recordList[$key]['add_time'] = date('Y-m-d H:i:s',$value['add_time']);
+        if(mb_strlen($value['user_name']) >= 10){
+            $start = 3;
+            $end = 5;
+        }else{
+            $start = 3;
+            $end = 4;
+        }
+        $recordList[$key]['icon'] = '';
+        $recordList[$key]['user_name'] = str_replace(mb_substr($value['user_name'], $start, $end), '***', $value['user_name']);
+    }
+    $jsonlist['recordList'] = $recordList;
+    
     echo $json->encode($jsonlist);
 } else if ($act == 'cart') {
     /* 标记购物流程为普通商品 */
@@ -1148,7 +1208,7 @@ elseif ($act == 'cart_num'){
     		'address_id' => $address['address_id']
     ), 'UPDATE', 'user_id = ' . $address['user_id']);
     if (update_address($address)) {
-        show_json_message($_LANG['edit_address_success'], $_LANG['address_list_lnk'], 'user.php?act=address_list');
+        show_json_message('设置成功', $_LANG['address_list_lnk'], 'user.php?act=address_list');
     }
 } else if ($act == "city_list") {
     // 取得国家列表，如果有收货人列表，取得省市区列表
@@ -1286,7 +1346,7 @@ else if($act == 'purchase_list'){
 }
 //获取用户库存列表
 else if($act == 'stock_list'){
-    $sql = "SELECT * FROM " . $ecs->table('suppliers') . " WHERE user_id = '$user_id'";
+    $sql = "SELECT * FROM " . $ecs->table('suppliers') . " WHERE is_check=1 and user_id = '$user_id'";
     $suppliers = $db->getRow($sql);
     $suppliers_id = $suppliers['suppliers_id'];
     if (!$suppliers_id){
@@ -1298,7 +1358,7 @@ else if($act == 'stock_list'){
    $totalPage = ceil($count / $page_size);
    $limit = ($page - 1) * $page_size . ','. $page_size;
    
-   $sql = "SELECT * FROM " . $ecs->table('goods') . " WHERE is_delete = 0 AND suppliers_id = '{$suppliers_id}' limit $limit";
+   $sql = "SELECT * FROM " . $ecs->table('goods') . " WHERE is_delete=0 AND is_on_sale=1 AND suppliers_id = '{$suppliers_id}' order by goods_id asc limit $limit";
    $goods = $db->getAll($sql);
 	if (!empty($goods)){
 		foreach ($goods as $key =>$good) {
@@ -1360,7 +1420,7 @@ elseif ($act == 'act_edit_purchase')
         $rs = $db->autoExecute($ecs->table('user_purchase'), $purchase, 'UPDATE', 'purchase_id = ' .$purchase_id . ' AND user_id = ' . $user_id);
         if ($rs)
         {
-            show_json_message('修改采购信息成功', '我的采购', 'user.php?act=purchase_list');
+            show_json_message('修改需求成功', '我的采购', 'user.php?act=purchase_list');
         }
     }
     else
@@ -1370,7 +1430,7 @@ elseif ($act == 'act_edit_purchase')
         // $purchase_id = $db->insert_id();
         if ($rs)
         {
-            show_json_message('添加采购信息成功', '我的采购', 'user.php?act=purchase_list');
+            show_json_message('添加需求成功', '我的采购', 'user.php?act=purchase_list');
         }
     }
 }
