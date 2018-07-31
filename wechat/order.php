@@ -4,8 +4,11 @@
 include_once('../includes/lib_payment.php');
 
 /* 取得购物类型 */
-$flow_type = CART_GENERAL_GOODS;
-
+if ($order_type == 'quick_order'){
+    $flow_type = QUICK_ORDER;
+}else{
+    $flow_type = CART_GENERAL_GOODS;
+}
 /* 检查购物车中是否有商品 */
 $sql = "SELECT COUNT(*) FROM " . $ecs->table('cart') .
 " WHERE session_id = '" . SESS_ID . "' " .
@@ -39,7 +42,8 @@ if (empty($_SESSION['user_id'])){
 $consignee = get_consignee($_SESSION['user_id']);
 
 /* 检查收货人信息是否完整 */
-if (!check_consignee_info($consignee, $flow_type)){
+$_flow_type = CART_GENERAL_GOODS;
+if (!check_consignee_info($consignee, $_flow_type)){
     /* 如果不完整则转向到收货人信息填写界面 */
     ajaxReturn(['code' => 0,'msg' => '检查收货人信息是否完整']);
     exit;
@@ -68,7 +72,7 @@ if($_POST['need_ban'] == 1){
 }
 
 $order = array(
-    'shipping_id'     => 5,
+	'shipping_id'     => isset($_POST['shipping_id']) ? intval($_POST['shipping_id']) : 0,
     'pay_id'          => 5, //5微信支付
     'pack_id'         => isset($_POST['pack']) ? intval($_POST['pack']) : 0,
     'card_id'         => isset($_POST['card']) ? intval($_POST['card']) : 0,
@@ -118,15 +122,17 @@ if($order['inv_payee']){
 }
 
 /* 扩展信息 */
-if (isset($_SESSION['flow_type']) && intval($_SESSION['flow_type']) != CART_GENERAL_GOODS)
-{
-    $order['extension_code'] = $_SESSION['extension_code'];
-    $order['extension_id'] = $_SESSION['extension_id'];
-}
-else
-{
-    $order['extension_code'] = '';
-    $order['extension_id'] = 0;
+if ($flow_type != 9){
+    if (isset($_SESSION['flow_type']) && intval($_SESSION['flow_type']) != CART_GENERAL_GOODS)
+    {
+        $order['extension_code'] = $_SESSION['extension_code'];
+        $order['extension_id'] = $_SESSION['extension_id'];
+    }
+    else
+    {
+        $order['extension_code'] = '';
+        $order['extension_id'] = 0;
+    }
 }
 
 /* 检查积分余额是否合法 */
@@ -142,7 +148,7 @@ if ($user_id > 0)
     }
     
     // 查询用户有多少积分
-    $flow_points = flow_available_points();  // 该订单允许使用的积分
+    $flow_points = flow_available_points($flow_type);  // 该订单允许使用的积分
     $user_points = $user_info['pay_points']; // 用户的积分总数
     
     $order['integral'] = min($order['integral'], $user_points, $flow_points);
@@ -344,10 +350,12 @@ $order['from_ad']          = !empty($_SESSION['from_ad']) ? $_SESSION['from_ad']
 $order['referer']          = !empty($_SESSION['referer']) ? addslashes($_SESSION['referer']) : '';
 
 /* 记录扩展信息 */
-if ($flow_type != CART_GENERAL_GOODS)
-{
-    $order['extension_code'] = $_SESSION['extension_code'];
-    $order['extension_id'] = $_SESSION['extension_id'];
+if ($flow_type != 9){
+    if ($flow_type != CART_GENERAL_GOODS)
+    {
+        $order['extension_code'] = $_SESSION['extension_code'];
+        $order['extension_id'] = $_SESSION['extension_id'];
+    }
 }
 
 $affiliate = unserialize($_CFG['affiliate']);
@@ -502,43 +510,49 @@ if ($order['order_amount'] <= 0)
             $virtual_goods['virtual_card'][] = array('goods_id' => $row['goods_id'], 'goods_name' => $row['goods_name'], 'num' => $row['num']);
         }
         
-        if ($virtual_goods AND $flow_type != CART_GROUP_BUY_GOODS)
-        {
-            /* 虚拟卡发货 */
-            if (virtual_goods_ship($virtual_goods,$msg, $order['order_sn'], true))
-            {
-                /* 如果没有实体商品，修改发货状态，送积分和红包 */
-                $sql = "SELECT COUNT(*)" .
-                    " FROM " . $ecs->table('order_goods') .
-                    " WHERE order_id = '$order[order_id]' " .
-                    " AND is_real = 1";
-                if ($db->getOne($sql) <= 0)
+        if($flow_type != 9){
+            if ($virtual_goods AND $flow_type != CART_GROUP_BUY_GOODS){
+                /* 虚拟卡发货 */
+                if (virtual_goods_ship($virtual_goods,$msg, $order['order_sn'], true))
                 {
-                    /* 修改订单状态 */
-                    update_order($order['order_id'], array('shipping_status' => SS_SHIPPED, 'shipping_time' => gmtime()));
-                    
-                    /* 如果订单用户不为空，计算积分，并发给用户；发红包 */
-                    if ($order['user_id'] > 0)
+                    /* 如果没有实体商品，修改发货状态，送积分和红包 */
+                    $sql = "SELECT COUNT(*)" .
+                        " FROM " . $ecs->table('order_goods') .
+                        " WHERE order_id = '$order[order_id]' " .
+                        " AND is_real = 1";
+                    if ($db->getOne($sql) <= 0)
                     {
-                        /* 取得用户信息 */
-                        $user = user_info($order['user_id']);
+                        /* 修改订单状态 */
+                        update_order($order['order_id'], array('shipping_status' => SS_SHIPPED, 'shipping_time' => gmtime()));
                         
-                        /* 计算并发放积分 */
-                        $integral = integral_to_give($order);
-                        log_account_change($order['user_id'], 0, 0, intval($integral['rank_points']), intval($integral['custom_points']), sprintf($_LANG['order_gift_integral'], $order['order_sn']));
-                        
-                        /* 发放红包 */
-                        send_order_bonus($order['order_id']);
+                        /* 如果订单用户不为空，计算积分，并发给用户；发红包 */
+                        if ($order['user_id'] > 0)
+                        {
+                            /* 取得用户信息 */
+                            $user = user_info($order['user_id']);
+                            
+                            /* 计算并发放积分 */
+                            $integral = integral_to_give($order);
+                            log_account_change($order['user_id'], 0, 0, intval($integral['rank_points']), intval($integral['custom_points']), sprintf($_LANG['order_gift_integral'], $order['order_sn']));
+                            
+                            /* 发放红包 */
+                            send_order_bonus($order['order_id']);
+                        }
                     }
                 }
             }
         }
-        
 }
 
 /* 清空购物车 */
 //clear_cart($flow_type);
-$type_cart = CART_GENERAL_GOODS;
+
+if ($order_type == 'quick_order'){
+    $type_cart = QUICK_ORDER;
+}else{
+    $type_cart = CART_GENERAL_GOODS;
+}
+
 $sql = "DELETE FROM " . $GLOBALS['ecs']->table('cart') .
 " WHERE session_id = '" . SESS_ID . "' AND rec_type = '$type_cart' AND goods_id in($in_goodsId)";
 $GLOBALS['db']->query($sql);
@@ -611,12 +625,12 @@ if($order['pay_id'] == 5){ //微信支付
         $config = new WxPayConfig();
         $wxorder = WxPayApi::unifiedOrder($config, $input);
         $jsApiParameters = $tools->GetJsApiParameters($wxorder);
-        ajaxReturn(['code' => 1,'order' => json_decode($jsApiParameters,true)]);
+        ajaxReturn(['code' => 1,'pay_id' => $order['order_id'],'order' => json_decode($jsApiParameters,true)]);
         
     } catch(Exception $e) {
         Log::ERROR(json_encode($e));
     }
-    
+    ajaxReturn(['code' => -9,'pay_id' => $order['order_id'],'msg' => '支付失败']);
     exit;
 }
 
@@ -690,12 +704,11 @@ function flow_cart_stock($arr)
  * @access  private
  * @return  integral
  */
-function flow_available_points()
-{
+function flow_available_points($flow_type){
     $sql = "SELECT SUM(g.integral * c.goods_number) ".
         "FROM " . $GLOBALS['ecs']->table('cart') . " AS c, " . $GLOBALS['ecs']->table('goods') . " AS g " .
         "WHERE c.session_id = '" . SESS_ID . "' AND c.goods_id = g.goods_id AND c.is_gift = 0 AND g.integral > 0 " .
-        "AND c.rec_type = '" . CART_GENERAL_GOODS . "'";
+        "AND c.rec_type = '" . $flow_type . "'";
     
     $val = intval($GLOBALS['db']->getOne($sql));
     

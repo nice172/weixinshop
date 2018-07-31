@@ -9,7 +9,7 @@ include_once ('includes/cls_json.php');
 if ((DEBUG_MODE & 2) != 2) {
     $smarty->caching = true;
 }
-
+define('QUICK_ORDER', 9);
 /* 载入语言文件 */
 require_once (ROOT_PATH . 'languages/' . $_CFG['lang'] . '/user.php');
 require_once (ROOT_PATH . 'languages/' . $_CFG['lang'] . '/shopping_flow.php');
@@ -46,13 +46,15 @@ $not_login_arr = array(
     'cart_num',
     'shipping',
     'item_num',
-    'logout'
+    'logout',
+    'delete_cart',
+    'clear_quick',
+    'orders_list'
 );
 
 /* 显示页面的action列表 */
 $ui_arr = array(
     "user_info",
-	"orders_list",
     "act_edit_address",
     "drop_consignee",
     "mem_info",
@@ -70,9 +72,10 @@ $ui_arr = array(
 	'userinfo',
     'updateuser',
     'getpurchase',
-    'recharge',
-    'mingdansend',
-    'mingdanlist','friends',
+    'recharge','order_detail',
+    'mingdansend','checkout','get_consignee',
+    'mingdanlist','friends','ticket_list',
+	'set_ticket','act_edit_ticket','delete_ticket',
     'deletemingdan','isapply','update_goods',
     'address_list','order_pay','delete_goods',
     'confirm','cancelorder','refundgoods'
@@ -100,9 +103,7 @@ if (empty($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 if ($act == 'create'){
-
-    
-    //$db->query("alter table ccl_users add truename varchar(255) not null default '' comment '姓名'");
+    //$db->query($sql);
     return;
 }
 
@@ -132,6 +133,169 @@ function getOpenId(){
     return $wxResult;
 }
 
+/* 查看订单详情 */
+if ($act == 'order_detail'){
+    include_once(ROOT_PATH . 'includes/lib_transaction.php');
+    include_once(ROOT_PATH . 'includes/lib_payment.php');
+    
+    $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+    
+    /* 订单详情 */
+    $order = get_order_detail($order_id, $user_id);
+    
+    if ($order === false){
+        ajaxReturn(['code' => 0,'msg' => '获取订单信息失败']);
+    }
+    
+    if ($order['province'] && $order['city'] && $order['district']) {
+        $province = $db->getRow("SELECT region_name FROM " . $ecs->table('region') . " WHERE region_id = " . $order['province'] . " LIMIT 1");
+        $city = $db->getRow("SELECT region_name FROM " . $ecs->table('region') . " WHERE region_id = " . $order['city'] . " LIMIT 1");
+        $district = $db->getRow("SELECT region_name FROM " . $ecs->table('region') . " WHERE region_id = " . $order['district'] . " LIMIT 1");
+        $order['province'] = $province['region_name'];
+        $order['city'] = $city['region_name'];
+        $order['district'] = $district['region_name'];
+    }
+    
+    /* 订单商品 */
+    $goods_list = order_goods($order_id);
+    foreach ($goods_list AS $key => $value){
+        $goods_list[$key]['market_price'] = price_format($value['market_price'], false);
+        $goods_list[$key]['goods_price']  = price_format($value['goods_price'], false);
+        $goods_list[$key]['subtotal']     = price_format($value['subtotal'], false);
+        $sql = "select s.suppliers_name,s.suppliers_sn,g.goods_number,g.goods_thumb from " . $GLOBALS['ecs']->table('suppliers') .
+        " s inner join " . $GLOBALS['ecs']->table('goods') .
+        " g on g.suppliers_id = s.suppliers_id where g.goods_id='{$value['goods_id']}';";
+        $info = $GLOBALS['db']->getRow($sql);
+        $goods_list[$key]['goods_img'] = !empty($info['goods_thumb']) ? $info['goods_thumb'] : '/themes/default/style/images/goods_default.png';
+        $goods_list[$key]['shopname'] = $info['suppliers_sn'];
+        $goods_list[$key]['goods_count_price'] = number_format($value['goods_number']*$value['goods_price'], 2, '.', '');
+    }
+    $ajaxData['goods_list'] = $goods_list;
+    /* 设置能否修改使用余额数 */
+    if ($order['order_amount'] > 0){
+        if ($order['order_status'] == OS_UNCONFIRMED || $order['order_status'] == OS_CONFIRMED)
+        {
+            $user = user_info($order['user_id']);
+            
+        }
+    }
+    
+    /* 未发货，未付款时允许更换支付方式 */
+    if ($order['order_amount'] > 0 && $order['pay_status'] == PS_UNPAYED && $order['shipping_status'] == SS_UNSHIPPED)
+    {
+        $payment_list = available_payment_list(false, 0, true);
+        
+        /* 过滤掉当前支付方式和余额支付方式 */
+        if(is_array($payment_list))
+        {
+            foreach ($payment_list as $key => $payment)
+            {
+                if ($payment['pay_id'] == $order['pay_id'] || $payment['pay_code'] == 'balance')
+                {
+                    unset($payment_list[$key]);
+                }
+            }
+        }
+        $ajaxData['payment_list'] = $payment_list;
+    }
+    
+    if($order['pay_id'] == 5){
+        $arr['orderId'] = $order['order_id'];
+        $arr['orderFee'] = $order['order_amount'];
+        $orderJson = base64_encode(json_encode($arr));
+        $order['pay_online'] = '<div style="text-align:center"><input type="button" class="orderJson" data-id="'.$orderJson.'" value="立即支付" /></div>';
+    }
+    
+    /* 订单 支付 配送 状态语言项 */
+//     $order['order_status'] = $_LANG['os'][$order['order_status']];
+//     $order['pay_status'] = $_LANG['ps'][$order['pay_status']];
+//     $order['shipping_status'] = $_LANG['ss'][$order['shipping_status']];
+    
+    $ajaxData['order'] = $order;
+    ajaxReturn(['code' => 1,'data' => $ajaxData]);
+    
+}
+
+if ($act == 'ticket_list'){
+	include_once(ROOT_PATH . 'includes/lib_transaction.php');
+	
+	/* 获得用户所有的收货人信息 */
+	$sql = "SELECT * FROM " .$ecs->table('user_ticket'). " WHERE user_id = '$user_id'";
+	$ticket_list = $db->getAll($sql);
+
+	ajaxReturn($ticket_list);
+}
+
+if($act == 'set_ticket'){
+	$data = post();
+	if (!empty($data)){
+		$data['ticket_id'] = intval($data['ticket_id']);
+		$db->autoExecute($ecs->table('user_ticket'), ['is_default' => 1],'UPDATE',"user_id='{$user_id}' and ticket_id='{$data['ticket_id']}'");
+		if ($db->affected_rows() > 0){
+			$db->autoExecute($ecs->table('user_ticket'), ['is_default' => 0],'UPDATE',"user_id='{$user_id}' and ticket_id!='{$data['ticket_id']}'");
+			ajaxReturn(['code' => 1,'content' => '设置成功']);
+		}else{
+			ajaxReturn(['code' => 0,'content' => '设置失败']);
+		}
+	}
+}
+
+if ($act == 'delete_ticket'){
+	$id = intval($_REQUEST['id']);
+	if ($id > 0){
+		$db->query("delete from {$ecs->table('user_ticket')} where user_id='{$user_id}' and ticket_id='{$id}'");
+		if ($db->affected_rows() > 0){
+			ajaxReturn(['code' => 1,'content' => '删除成功']);
+		}
+	}
+	ajaxReturn(['code' => 0,'content' => '删除失败']);
+}
+
+if ($act == 'act_edit_ticket'){
+
+	$ticket = array(
+			'user_id'    => $user_id,
+			'ticket_id' => intval($_POST['ticket_id']),
+			'country'    => 1,
+			'province'   => isset($_POST['province'])  ? intval($_POST['province']) : 0,
+			'city'       => isset($_POST['city'])      ? intval($_POST['city'])     : 0,
+			'district'   => isset($_POST['district'])  ? intval($_POST['district']) : 0,
+			'ticket_name'    => isset($_POST['ticket_name'])   ? compile_str(trim($_POST['ticket_name']))    : '',
+			'company_name'  => isset($_POST['company_name']) ? compile_str(trim($_POST['company_name']))  : '',
+			'company_sn'      => isset($_POST['company_sn'])     ? compile_str(trim($_POST['company_sn']))      : '',
+			'company_address'        => isset($_POST['company_address'])       ? compile_str(trim($_POST['company_address'])) : '',
+			'company_phone'     => isset($_POST['company_phone'])    ? compile_str(trim($_POST['company_phone'])) : '',
+			'company_bank'  => isset($_POST['company_bank']) ? compile_str(trim($_POST['company_bank']))  : '',
+			'company_bankcard' => isset($_POST['company_bankcard']) ? compile_str(trim($_POST['company_bankcard'])) : '',
+			'is_default'       => isset($_POST['is_default'])       ? compile_str(trim($_POST['is_default'])) : '',
+	);
+
+	if(!$ticket['province'] || !$ticket['city'] || !$ticket['district'] || !$ticket['ticket_name'] || !$ticket['company_name'] || !$ticket['company_sn'] || !$ticket['company_address'] || !$ticket['company_phone'] || !$ticket['company_bank'] || !$ticket['company_bankcard']){
+		ajaxReturn(['code' => 0,'msg' => '带*号的不能为空']);
+		exit;
+	}
+	
+	$ticket_id = intval($ticket['ticket_id']);
+	
+	if ($ticket_id > 0)
+	{
+		$rs = $db->autoExecute($ecs->table('user_ticket'), $ticket, 'UPDATE', 'ticket_id = ' .$ticket_id . ' AND user_id = ' . $ticket['user_id']);
+		if ($rs)
+		{
+			ajaxReturn(['code' => 1,'msg' => '修改发票信息成功']);
+		}
+	}
+	else
+	{
+		$ticket['ctime'] = date('Y-m-d H:i:s');
+		$rs = $db->autoExecute($ecs->table('user_ticket'), $ticket, 'INSERT');
+		if ($rs){
+			ajaxReturn(['code' => 1,'msg' => '添加发票信息成功']);
+		}
+	}
+	ajaxReturn(['code' => 0,'msg' => '提交失败']);
+}
+
 if ($act == 'logout'){
     $sesid = SESS_ID;
     $db->query("delete from {$ecs->table('sessions')} where sesskey='{$sesid}'");
@@ -147,6 +311,23 @@ if ($act == 'item_num'){
     $sql = "SELECT count(*) as count FROM " . $ecs->table('cart') . " " . " WHERE session_id = '" . SESS_ID . "' AND rec_type = '".$rec_type."'";
     $res = $db->getRow($sql);
     ajaxReturn(['cart_count' => $res['count']]);
+}
+
+if ($act == 'delete_cart'){
+    $goods_id = intval($_GET['goods_id']);
+    if ($goods_id > 0){
+        $rec_type = QUICK_ORDER;
+        $sql = "DELETE FROM " . $ecs->table('cart') . " " . " WHERE goods_id='{$goods_id}' AND session_id = '" . SESS_ID . "' AND rec_type = '".$rec_type."'";
+        $db->query($sql);
+    }
+    ajaxReturn(['code' => 1]);
+}
+
+if ($act == 'clear_quick'){
+    $rec_type = QUICK_ORDER;
+    $sql = "DELETE FROM " . $ecs->table('cart') . " " . " WHERE session_id = '" . SESS_ID . "' AND rec_type = '".$rec_type."'";
+    $db->query($sql);
+    ajaxReturn(['code' => 1]);
 }
 
 if ($act == 'recharge'){
@@ -299,7 +480,8 @@ if ($act == 'quickcate'){
     $banhou = $ban_categories[226]['attrs']; //板厚
     $size = $ban_categories[229]['attrs']; //尺寸
 
-    $tempCate = $tempmodel = $temptonghou = $tempbanhou = $tempsize = array();
+    $tempCate = array(['name' => '请选择']);
+    $tempmodel = $temptonghou = $tempbanhou = $tempsize = array(['goods_attr_val' => '全部']);
     foreach ($catelist as $key => $value){
         $tempCate[] = $value;
     }
@@ -324,7 +506,7 @@ if ($act == 'quickcate'){
         $tempsize[] = $v;
     }
     $size = $tempsize;
-    
+    array_unshift($brand_list, ['brand_name' => '全部']);
     unset($tempCate,$tempmodel,$temptonghou,$tempbanhou,$tempsize);
     ajaxReturn(['code' => 1,'tonghou' => $tonghou, 
         'banhou' => $banhou,'catelist' => $catelist,
@@ -446,10 +628,10 @@ if ($act == 'updateuser'){
 if ($act == 'payment'){
  
     $goodsIdArray = explode(',', $_POST['goodsids']);
-    
     if (empty($goodsIdArray)) ajaxReturn(['code' => 0,'msg' => '请至少选择一个商品']);
     
     $count_type = 'payment';
+    $order_type = isset($_GET['type']) ? trim($_GET['type']) : 'default';
     
     $wxResult = getOpenId();
 
@@ -504,7 +686,7 @@ if ($act == 'order_pay'){
     } catch(Exception $e) {
         Log::ERROR(json_encode($e));
     }
-    
+    ajaxReturn(['code' => 0,'msg' => '调起微信支付失败']);
     return;
     
 }
@@ -538,8 +720,20 @@ if ($act == 'quick'){
     $district = $district['region_name']?$district['region_name']:'';
     $attr_desc = '';
     if (isset($data['model'])){
-    	$attr_desc = '型号：'.$data['model'].'；铜厚：'.$data['tong'].'；板厚：'.$data['ban'].'；尺寸：'.$data['size'];
+    	if ($data['model'] != '全部'){
+    	    $attr_desc .= '型号：'.$data['model'].'；';
+    	}
+    	if ($data['tong'] != '全部'){
+    	    $attr_desc .= '铜厚：'.$data['tong'].'；';
+    	}
+    	if ($data['ban'] != '全部'){
+    	    $attr_desc .= '板厚：'.$data['ban'].'；';
+    	}
+    	if ($data['size'] != '全部'){
+    	    $attr_desc .= '尺寸：'.$data['size'].'；';
+    	}
     }
+    if ($data['brand_name'] == '全部') $data['brand_name'] = '';
     $insertData = [
         'user_id' => $user_id,
         'cate_name' => isset($data['cate_name']) ? $data['cate_name'] : '',
@@ -551,6 +745,9 @@ if ($act == 'quick'){
         'num' => $data['num'],
         'ctime' => date("Y-m-d H:i:s")
     ];
+    if (isset($data['order_id'])){
+        $insertData['order_id'] = $data['order_id'];
+    }
     if (empty($type)) {
         $insertData['images'] = json_encode($data['images']);
     }
@@ -679,7 +876,7 @@ if ($act == 'hot') {
         }
         $jsonlist[$key] = $orders_list[$key]['consignee'] . "  订购了 " . $orders_list[$key]['goods_name'] . '  ' . $orders_list[$key]['order_amount'] . "元   " . $status;
     }
-    ;
+    
     echo $json->encode($jsonlist);
 } else if ($act == 'home_shownum') {
     // 商家数量
@@ -966,11 +1163,301 @@ join {$ecs->table('users')} u on o.user_id=u.user_id where goods_id='{$goods_id}
     $jsonlist['recordList'] = $recordList;
     
     echo $json->encode($jsonlist);
-} else if ($act == 'cart') {
+}elseif($act == 'get_consignee'){
+	$consignee = get_consignee($_SESSION['user_id']);
+	ajaxReturn(['code' => 1,'consignee' => $consignee]);
+}elseif($act == 'checkout'){
+	$data = post();
+	$goodsIdArray = explode(',', $data['goodsids']);
+	if (empty($goodsIdArray)) ajaxReturn(['code' => 0,'msg' => '请至少选择一个商品']);
+	unset($_SESSION['flow_consignee']);
+	unset($_SESSION['flow_type']);
+	/*------------------------------------------------------ */
+	//-- 订单确认
+	/*------------------------------------------------------ */
+	//$buy_goods_ids = $_SESSION['buy_goods_ids'];
+	$order_type = isset($_GET['type']) ? trim($_GET['type']) : 'default';
+	/* 取得购物类型 */
+	if ($order_type == 'quick_order'){
+	    $flow_type = QUICK_ORDER;
+	}else{
+	   $flow_type = isset($_SESSION['flow_type']) ? intval($_SESSION['flow_type']) : CART_GENERAL_GOODS;
+	}
+	/* 团购标志 */
+	if ($flow_type == CART_GROUP_BUY_GOODS){
+		$smarty->assign('is_group_buy', 1);
+	}
+	/* 积分兑换商品 */
+	elseif ($flow_type == CART_EXCHANGE_GOODS){
+		$smarty->assign('is_exchange_goods', 1);
+	}else{
+		//正常购物流程  清空其他购物流程情况
+		$_SESSION['flow_order']['extension_code'] = '';
+	}
+	
+	/* 检查购物车中是否有商品 */
+	$sql = "SELECT COUNT(*) FROM " . $ecs->table('cart') .
+	" WHERE session_id = '" . SESS_ID . "' " .
+	"AND parent_id = 0 AND is_gift = 0 AND rec_type = '$flow_type'";
+	
+	if ($db->getOne($sql) == 0){
+		ajaxReturn(['code' => 0,'msg' => $_LANG['no_goods_in_cart']]);
+	}
+		
+	$consignee = get_consignee($_SESSION['user_id']);
+
+	$_flow_type = CART_GENERAL_GOODS;
+	if (!check_consignee_info($consignee, $_flow_type)){
+		ajaxReturn(['code' => 0,'msg' => '收货地址信息不完整']);
+	}
+	
+	$consignee['province_city_area'] = "";
+	if($consignee){
+		if($consignee && $consignee['province'] && $consignee['city'] && $consignee['district']){
+			$province = $db->getOne("SELECT region_name FROM " .$ecs->table('region'). " WHERE region_id = " . $consignee['province'] . " LIMIT 1");
+			$city = $db->getOne("SELECT region_name FROM " .$ecs->table('region'). " WHERE region_id = " . $consignee['city'] . " LIMIT 1");
+			$district = $db->getOne("SELECT region_name FROM " .$ecs->table('region'). " WHERE region_id = " . $consignee['district'] . " LIMIT 1");
+			$consignee['province_city_area'] = $province." ".$city." ".$district;
+		}
+	}
+	$_SESSION['flow_consignee'] = $consignee;
+	
+	$ajaxData['consignee'] = $consignee;
+	
+	/* 对商品信息赋值 */
+	$cart_goods = cart_goods($flow_type); // 取得商品列表，计算合计
+	if($cart_goods){
+		foreach ($cart_goods as $key => $val) {
+			if(!in_array($val['goods_id'], $goodsIdArray)){
+				unset($cart_goods[$key]);
+			}else{
+				$sql = "select s.suppliers_name,s.suppliers_sn,g.goods_number from " . $GLOBALS['ecs']->table('suppliers') .
+				" s inner join " . $GLOBALS['ecs']->table('goods') .
+				" g on g.suppliers_id = s.suppliers_id where g.goods_id='{$val['goods_id']}';";
+				$info = $GLOBALS['db']->getRow($sql);
+				$cart_goods[$key]['goods_img'] = !empty($val['goods_thumb']) ? $val['goods_thumb'] : '/themes/default/style/images/goods_default.png';
+				$cart_goods[$key]['supplier'] = $info['suppliers_sn'];
+				$cart_goods[$key]['goods_count_price'] = number_format($val['goods_number']*$val['goods_price'], 2, '.', '');
+				$cart_goods[$key]['goods_number_max'] = $info['goods_number'];
+			}
+		}
+	}
+
+	$ajaxData['goods_list'] = $cart_goods;
+	
+	/*
+	 * 取得购物流程设置
+	 */
+	$ajaxData['config'] = $_CFG;
+	/*
+	 * 取得订单信息
+	 */
+	$order = flow_order_info();
+	$ajaxData['order'] = $order;
+	
+	/* 计算折扣 */
+	if ($flow_type != 9){
+    	if ($flow_type != CART_EXCHANGE_GOODS && $flow_type != CART_GROUP_BUY_GOODS){
+    		$discount = compute_discount();
+    		$smarty->assign('discount', $discount['discount']);
+    		$favour_name = empty($discount['name']) ? '' : join(',', $discount['name']);
+    		$ajaxData['your_discount'] = sprintf($_LANG['your_discount'], $favour_name, price_format($discount['discount']));
+    	}
+	}
+
+	/*
+	 * 计算订单的费用
+	 */
+	$total = order_fee($order, $cart_goods, $consignee);
+
+	$total['amount_formated'] = str_replace("￥", "", $total['amount_formated']);
+	$total['amount_formated'] = str_replace("元", "", $total['amount_formated']);
+	// $total['amount_formated'] += $total['quick_ship_fee'];
+// 	if($total['amount_formated'] < 100){
+// 		$total['amount_formated'] = "100.00";
+// 	}
+	
+	$total['amount_formated'] = "￥".sprintf("%.2f", $total['amount_formated'])."元";
+	
+	$ajaxData['total'] = $total;
+	$ajaxData['shopping_money'] = sprintf($_LANG['shopping_money'], $total['formated_goods_price']);
+	$ajaxData['market_price_desc'] = sprintf($_LANG['than_market_price'], $total['formated_market_price'], $total['formated_saving'], $total['save_rate']);
+	
+	/* 取得配送列表 */
+	$region            = array($consignee['country'], $consignee['province'], $consignee['city'], $consignee['district']);
+	$shipping_list     = available_shipping_list($region);
+	$cart_weight_price = cart_weight_price($flow_type);
+	$insure_disabled   = true;
+	$cod_disabled      = true;
+	
+	// 查看购物车中是否全为免运费商品，若是则把运费赋为零
+	$sql = 'SELECT count(*) FROM ' . $ecs->table('cart') . " WHERE `session_id` = '" . SESS_ID. "' AND `extension_code` != 'package_buy' AND `is_shipping` = 0";
+	$shipping_count = $db->getOne($sql);
+	
+	foreach ($shipping_list AS $key => $val)
+	{
+		$shipping_cfg = unserialize_config($val['configure']);
+		$shipping_fee = ($shipping_count == 0 AND $cart_weight_price['free_shipping'] == 1) ? 0 : shipping_fee($val['shipping_code'], unserialize($val['configure']),
+				$cart_weight_price['weight'], $cart_weight_price['amount'], $cart_weight_price['number']);
+		
+		$shipping_list[$key]['format_shipping_fee'] = price_format($shipping_fee, false);
+		$shipping_list[$key]['shipping_fee']        = $shipping_fee;
+		$shipping_list[$key]['free_money']          = price_format($shipping_cfg['free_money'], false);
+		$shipping_list[$key]['insure_formated']     = strpos($val['insure'], '%') === false ?
+		price_format($val['insure'], false) : $val['insure'];
+		
+		/* 当前的配送方式是否支持保价 */
+		if ($val['shipping_id'] == $order['shipping_id'])
+		{
+			$insure_disabled = ($val['insure'] == 0);
+			$cod_disabled    = ($val['support_cod'] == 0);
+		}
+	}
+	
+	$ajaxData['shipping_list'] =  $shipping_list;
+	$ajaxData['insure_disabled'] = $insure_disabled;
+	$ajaxData['cod_disabled']  =  $cod_disabled;
+	
+	/* 取得支付列表 */
+	if ($order['shipping_id'] == 0)
+	{
+		$cod        = true;
+		$cod_fee    = 0;
+	}
+	else
+	{
+		$shipping = shipping_info($order['shipping_id']);
+		$cod = $shipping['support_cod'];
+		
+		if ($cod)
+		{
+			if ($cod)
+			{
+				$shipping_area_info = shipping_area_info($order['shipping_id'], $region);
+				$cod_fee            = $shipping_area_info['pay_fee'];
+			}
+		}
+		else
+		{
+			$cod_fee = 0;
+		}
+	}
+	
+	
+	
+	/* 取得包装与贺卡 */
+	if ($total['real_goods_count'] > 0)
+	{
+		/* 只有有实体商品,才要判断包装和贺卡 */
+		if (!isset($_CFG['use_package']) || $_CFG['use_package'] == '1')
+		{
+			/* 如果使用包装，取得包装列表及用户选择的包装 */
+			$ajaxData['pack_list'] = pack_list();
+		}
+		
+		/* 如果使用贺卡，取得贺卡列表及用户选择的贺卡 */
+		if (!isset($_CFG['use_card']) || $_CFG['use_card'] == '1')
+		{
+			$ajaxData['card_list'] = card_list();
+		}
+	}
+	
+	$user_info = user_info($_SESSION['user_id']);
+	
+	/* 如果使用余额，取得用户余额 */
+	if ((!isset($_CFG['use_surplus']) || $_CFG['use_surplus'] == '1')
+			&& $_SESSION['user_id'] > 0
+			&& $user_info['user_money'] > 0)
+	{
+		// 能使用余额
+		$ajaxData['allow_use_surplus'] = 1;
+		$ajaxData['your_surplus'] = $user_info['user_money'];
+	}
+	
+	/* 如果使用积分，取得用户可用积分及本订单最多可以使用的积分 */
+	if ((!isset($_CFG['use_integral']) || $_CFG['use_integral'] == '1')
+			&& $_SESSION['user_id'] > 0
+			&& $user_info['pay_points'] > 0
+			&& ($flow_type != CART_GROUP_BUY_GOODS && $flow_type != CART_EXCHANGE_GOODS))
+	{
+		// 能使用积分
+		$ajaxData['allow_use_integral'] = 1;
+		$ajaxData['order_max_integral'] = flow_available_points();  // 可用积分
+		$ajaxData['your_integral'] =      $user_info['pay_points']; // 用户积分
+	}
+	
+	/* 如果使用红包，取得用户可以使用的红包及用户选择的红包 */
+	if ((!isset($_CFG['use_bonus']) || $_CFG['use_bonus'] == '1')
+			&& ($flow_type != CART_GROUP_BUY_GOODS && $flow_type != CART_EXCHANGE_GOODS))
+	{
+		// 取得用户可用红包
+		$user_bonus = user_bonus($_SESSION['user_id'], $total['goods_price']);
+		if (!empty($user_bonus))
+		{
+			foreach ($user_bonus AS $key => $val)
+			{
+				$user_bonus[$key]['bonus_money_formated'] = price_format($val['type_money'], false);
+			}
+			$ajaxData['bonus_list'] = $user_bonus;
+		}
+		
+		// 能使用红包
+		$ajaxData['allow_use_bonus'] = 1;
+	}
+	
+	/* 如果使用缺货处理，取得缺货处理列表 */
+	if (!isset($_CFG['use_how_oos']) || $_CFG['use_how_oos'] == '1')
+	{
+		if (is_array($GLOBALS['_LANG']['oos']) && !empty($GLOBALS['_LANG']['oos']))
+		{
+			$ajaxData['how_oos_list'] = $GLOBALS['_LANG']['oos'];
+		}
+	}
+	
+	/* 如果能开发票，取得发票内容列表 */
+	if ((!isset($_CFG['can_invoice']) || $_CFG['can_invoice'] == '1')
+			&& isset($_CFG['invoice_content'])
+			&& trim($_CFG['invoice_content']) != '' && $flow_type != CART_EXCHANGE_GOODS)
+	{
+		$inv_content_list = explode("\n", str_replace("\r", '', $_CFG['invoice_content']));
+		$ajaxData['inv_content_list'] = $inv_content_list;
+		
+		$inv_type_list = array();
+		foreach ($_CFG['invoice_type']['type'] as $key => $type)
+		{
+			if (!empty($type))
+			{
+				// $inv_type_list[$type] = $type . ' [' . floatval($_CFG['invoice_type']['rate'][$key]) . '%]';
+				$inv_type_list[] = $type;
+			}
+		}
+		$ajaxData['inv_type_list'] = $inv_type_list;
+	}
+	
+	//发票信息
+	$sql = "SELECT ticket_id, company_name FROM " .$ecs->table('user_ticket'). " WHERE user_id = '".$_SESSION['user_id']."'";
+	$ticket_list = $db->getAll($sql);
+	array_unshift($ticket_list, ['ticket_id' => 0,'company_name' => '请选择']);
+	$ajaxData['ticket_list'] = $ticket_list;
+	
+	
+	/* 保存 session */
+	$_SESSION['flow_order'] = $order;
+	
+	ajaxReturn(['code' => 1,'data' => $ajaxData]);
+	
+}else if ($act == 'cart') {
+    $_type = isset($_GET['type']) ? trim($_GET['type']) : 'default';
+    unset($_SESSION['flow_type']);
     /* 标记购物流程为普通商品 */
     $_SESSION['flow_type'] = CART_GENERAL_GOODS;
+
     /* 取得商品列表，计算合计 */
-    $cart_goods = wx_get_cart_goods();
+    if ($_type == 'quick_order'){
+        $cart_goods = wx_get_cart_goods(QUICK_ORDER);
+    }else{
+        $cart_goods = wx_get_cart_goods();
+    }
     // echo '<pre>';
     if ($cart_goods['goods_list']) {
         foreach ($cart_goods['goods_list'] as $key => $val) {
@@ -980,6 +1467,8 @@ join {$ecs->table('users')} u on o.user_id=u.user_id where goods_id='{$goods_id}
             // $cart_goods['goods_list'][$key]['supplier'] = $info['suppliers_name']."（编号：{$info['suppliers_sn']}）";
             $cart_goods['goods_list'][$key]['supplier'] = $info['suppliers_sn'];
             $cart_goods['goods_list'][$key]['goods_number_max'] = $info['goods_number'];
+            $cart_goods['goods_list'][$key]['goods_count_price'] = number_format($val['goods_number']*$val['goods_price'], 2, '.', '');
+            
             if (! $info['goods_number']) {
                 $sql = "select goods_number from " . $GLOBALS['ecs']->table('goods') . " where goods_id='{$val['goods_id']}';";
                 $goods_info = $GLOBALS['db']->getRow($sql);
@@ -1030,10 +1519,12 @@ join {$ecs->table('users')} u on o.user_id=u.user_id where goods_id='{$goods_id}
     $smarty->assign('fittings_list', $fittings_list);
     echo json_encode(array(
         'fittings_list' => $fittings_list,
-        'goods_list' => $cart_goods['goods_list']
+        'goods_list' => $cart_goods['goods_list'],
+    	'total' => $cart_goods['total']
     ));
     exit();
 } else if ($act == 'add_to_cart') {
+    $type = isset($_GET['type']) ? trim($_GET['type']) : '';
     include_once ('../includes/cls_json.php');
     $_POST['goods'] = strip_tags(urldecode($_POST['goods']));
     $_POST['goods'] = json_str_iconv($_POST['goods']);
@@ -1110,24 +1601,51 @@ join {$ecs->table('users')} u on o.user_id=u.user_id where goods_id='{$goods_id}
                 $goods->spec[$key] = intval($val);
             }
         }
-        // 更新：添加到购物车
-        if (addto_cart($goods->goods_id, $goods->number, $goods->spec, $goods->parent)) {
-            if ($_CFG['cart_confirm'] > 2) {
-                $result['message'] = '';
-            } else {
-                $result['message'] = $_CFG['cart_confirm'] == 1 ? $_LANG['addto_cart_success_1'] : $_LANG['addto_cart_success_2'];
+        if ($type == 'quick_order'){
+            // 更新：添加到购物车
+            $sesid = SESS_ID;
+            $in_goods = $db->getOne("select goods_id from {$ecs->table('cart')} where session_id='{$sesid}' and goods_id='{$goods->goods_id}' and rec_type=".QUICK_ORDER);
+            if (empty($in_goods)){
+                if (addto_cart($goods->goods_id, $goods->number, $goods->spec, $goods->parent, QUICK_ORDER)) {
+                    if ($_CFG['cart_confirm'] > 2) {
+                        $result['message'] = '';
+                    } else {
+                        $result['message'] = $_CFG['cart_confirm'] == 1 ? $_LANG['addto_cart_success_1'] : $_LANG['addto_cart_success_2'];
+                    }
+                    
+                    $result['content'] = insert_cart_info();
+                    $result['one_step_buy'] = $_CFG['one_step_buy'];
+                } else {
+                    $result['message'] = $err->last_message();
+                    $result['error'] = $err->error_no;
+                    $result['goods_id'] = stripslashes($goods->goods_id);
+                    if (is_array($goods->spec)) {
+                        $result['product_spec'] = implode(',', $goods->spec);
+                    } else {
+                        $result['product_spec'] = $goods->spec;
+                    }
+                }
             }
-            
-            $result['content'] = insert_cart_info();
-            $result['one_step_buy'] = $_CFG['one_step_buy'];
-        } else {
-            $result['message'] = $err->last_message();
-            $result['error'] = $err->error_no;
-            $result['goods_id'] = stripslashes($goods->goods_id);
-            if (is_array($goods->spec)) {
-                $result['product_spec'] = implode(',', $goods->spec);
+        }else{
+            // 更新：添加到购物车
+            if (addto_cart($goods->goods_id, $goods->number, $goods->spec, $goods->parent)) {
+                if ($_CFG['cart_confirm'] > 2) {
+                    $result['message'] = '';
+                } else {
+                    $result['message'] = $_CFG['cart_confirm'] == 1 ? $_LANG['addto_cart_success_1'] : $_LANG['addto_cart_success_2'];
+                }
+                
+                $result['content'] = insert_cart_info();
+                $result['one_step_buy'] = $_CFG['one_step_buy'];
             } else {
-                $result['product_spec'] = $goods->spec;
+                $result['message'] = $err->last_message();
+                $result['error'] = $err->error_no;
+                $result['goods_id'] = stripslashes($goods->goods_id);
+                if (is_array($goods->spec)) {
+                    $result['product_spec'] = implode(',', $goods->spec);
+                } else {
+                    $result['product_spec'] = $goods->spec;
+                }
             }
         }
     }
@@ -1835,7 +2353,7 @@ function wx_order_goods($order_id)
         }
         
         $imgRow = $GLOBALS['db']->getRow("select * from {$GLOBALS['ecs']->table('goods_gallery')} where goods_id={$row['goods_id']}");
-        $row['img'] = $imgRow['thumb_url'] ? $http.$imgRow['thumb_url'] : '';
+        $row['img'] = $imgRow['thumb_url'] ? $http.$imgRow['thumb_url'] : $http.'themes/default/style/images/goods_default.png';
         $goods_list[] = $row;
     }
     

@@ -127,8 +127,7 @@ if ($notify->GetReturn_code() == 'SUCCESS'){
     }
 
     $orderInfo = $db->getRow("select * from {$ecs->table('order_info')} where pay_status!=2 and order_sn='{$order_sn}' and user_id='{$user_id}'");
-    //if (!empty($orderInfo) && ($result['total_fee']/100) == $orderInfo['order_amount']){
-    if (!empty($orderInfo)){
+    if (!empty($orderInfo) && ($result['total_fee']/100) == $orderInfo['order_amount']){
         $db->autoExecute($ecs->table('order_info'), ['pay_status' => 2],'UPDATE',"user_id='{$orderInfo['user_id']}' and order_id='{$orderInfo['order_id']}'");
         $pay_log = $db->getRow("select * from {$ecs->table('pay_log')} where order_id='{$orderInfo['order_id']}'");
         Log::INFO('pay_log:'. json_encode($pay_log));

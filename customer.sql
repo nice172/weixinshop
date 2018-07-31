@@ -4,6 +4,7 @@ alter table ccl_users add city varchar(255) not null default '' comment '市';
 alter table ccl_users add area varchar(255) not null default '' comment '区';
 alter table ccl_users add truename varchar(255) not null default '' comment '姓名';
 alter table ccl_order_quick add audio varchar(255) not null default '' comment '录音文件';
+alter table ccl_order_quick add order_id varchar(255) not null default '' comment '订单id';
 
 
 

@@ -1,0 +1,88 @@
+{if $full_page}
+{include file="pageheader.htm"}
+{insert_scripts files="../js/utils.js,listtable.js"}
+<!-- 订单搜索 -->
+<div class="form-div">
+  <form action="order.php?act=quick" name="searchForm" method="POST">
+    <img src="images/icon_search.gif" width="26" height="22" border="0" alt="SEARCH" />
+    联系人<input name="realname" type="text" id="realname" size="15" value="{$filter.realname}">
+    联系方式<input name="mobile" type="text" id="mobile" size="15" value="{$filter.mobile}">
+    <input type="submit" value="{$lang.button_search}" class="button" />
+  </form>
+</div>
+
+<!-- 订单列表 -->
+<form method="post" action="order.php?act=quick" name="listForm" onsubmit="return check()">
+  <div class="list-div" id="listDiv">
+{/if}
+
+<table cellpadding="3" cellspacing="1">
+  <tr>
+    <th>ID</th>
+    <th>下单方式</th>
+    <th>分类</th>
+    <th>品牌</th>
+    <th>属性</th>
+    <th>联系人</th>
+    <th>联系方式</th>
+    <th>下单时间</th>
+    <th>操作</th>
+  <tr>
+  {foreach from=$order_list item=order key=okey}
+  <tr>
+    <td align="center">{$order.quick_id}</td>
+    
+    <td>
+    {if $order.audio}
+    	语音下单
+    {/if}
+    
+    {if $order.images}
+    	拍照下单
+    {/if}
+    
+    {if $order.cate_name}
+    	参数下单
+    {/if}
+    
+    </td>
+    
+    <td>{$order.cate_name}</td>
+    <td>{$order.brand_name}</td>
+    <td>{$order.attr_desc}</td>
+    <td>{$order.realname}</td>
+    <td>{$order.mobile}</td>
+    <td>{$order.ctime}</td>
+    <td><a href="order.php?act=quick_view&quick_id={$order.quick_id}">查看</a>｜<a href="javascript:_delete('order.php?act=quick_delete&quick_id={$order.quick_id}');">删除</a></td>
+  </tr>
+  {/foreach}
+</table>
+
+<!-- 分页 -->
+<table id="page-table" cellspacing="0">
+  <tr>
+    <td align="right" nowrap="true">
+    {include file="page.htm"}
+    </td>
+  </tr>
+</table>
+
+{if $full_page}
+  </div>
+</form>
+{/literal}
+{include file="pagefooter.htm"}
+{/if}
+
+
+{literal}
+<script type="text/javascript">
+function _delete(url){
+	if(!confirm('确认要删除吗？')){
+		return false;
+	}
+	window.location.href=url;
+}
+</script>
+
+{/literal}
